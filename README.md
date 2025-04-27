@@ -3,140 +3,200 @@
 ## Table of Contents
 1. [Introduction](#1-introduction)
 2. [Project Structure](#2-project-structure)
-3. [Pipeline](#3-pipeline)
+3. [Pipeline Overview](#3-pipeline-overview)
 4. [Data](#4-data)
+    - 4.1. Source Files
+    - 4.2. Generated Data Formats
+    - 4.3. Data Preparation Steps
+    - 4.4. Data Structures
 5. [Methodology](#5-methodology)
+    - 5.1. Preprocessing - Tokenization
+    - 5.2. Model Architecture
+    - 5.3. Training Process
 6. [Results](#6-results)
 7. [Discussion & Conclusion](#7-discussion--conclusion)
+    - 7.1. Interpretation
+    - 7.2. Limitations
+    - 7.3. Conclusion
 8. [Usage Instructions](#8-usage-instructions)
-9. [Script Documentation](#9-script-documentation)
-10. [Data Processing Workflow](#10-data-processing-workflow)
+    - 8.1. Prerequisites
+    - 8.2. Running the Pipeline (Default - HF Format)
+    - 8.3. Running the Pipeline (Optional - Parquet Format)
+    - 8.4. Optional Scripts
+9. [API and Module Documentation](#9-api-and-module-documentation)
+    - 9.1. `scripts/1_fix_dataset.py`
+    - 9.2. `scripts/2_tokenize_dataset.py`
+    - 9.3. `scripts/3_train_model.py`
+    - 9.4. `scripts/4_predict.py`
+    - 9.5. `scripts/convert_to_parquet.py`
+    - 9.6. `scripts/benchmark_parquet.py`
+    - 9.7. `utilities/dataset_splitter.py`
+    - 9.8. `utilities/parquet_utils.py`
+10. [Data Processing Workflow Details](#10-data-processing-workflow-details)
+    - 10.1. Raw Data Loading
+    - 10.2. Text Extraction and Cleaning
+    - 10.3. Dataset Creation and Formatting
+    - 10.4. Dataset Splitting
+    - 10.5. Tokenization for Model Input
+    - 10.6. Data Format Conversion (Optional)
+    - 10.7. Data Flow Summary
 11. [Parquet vs Hugging Face Performance Comparison](#11-parquet-vs-hugging-face-performance-comparison)
+    - 11.1. Storage Efficiency
+    - 11.2. Loading and Processing Performance
+    - 11.3. When to Use Each Format
+    - 11.4. Conclusion
 12. [Requirements](#12-requirements)
+
+---
 
 ## 1. Introduction
 
 - **Objective:** This project aims to build a machine learning model to classify Twitter accounts as either 'human' or 'bot' using the Twibot-20 dataset.
-- **Approach:** We fine-tuned a pre-trained DistilBERT model for sequence classification using the Hugging Face Transformers library.
-- **Data Focus:** Classification is based on user profile text (username, name, description, location) and up to 5 recent tweets when available.
+- **Approach:** We fine-tuned a pre-trained DistilBERT model for sequence classification using the Hugging Face Transformers library. The project supports both the standard Hugging Face dataset format and the efficient Apache Parquet format.
+- **Data Focus:** Classification is based on user profile text (username, name, description, location) and up to 5 recent tweets when available in the source data.
 
 ## 2. Project Structure
-
-```
 /
-├── scripts/                      # Main pipeline scripts
-│   ├── 1_fix_dataset.py          # Data extraction and preprocessing
-│   ├── 2_tokenize_dataset.py     # Text tokenization
-│   ├── 3_train_model.py          # Model training
-│   ├── 4_predict.py              # Making predictions
-│   ├── convert_to_parquet.py     # Convert datasets to Parquet format
-│   └── benchmark_parquet.py      # Benchmark Parquet vs Hugging Face performance
+├── scripts/ # Main pipeline scripts
+│ ├── 1_fix_dataset.py # Data extraction and preprocessing
+│ ├── 2_tokenize_dataset.py # Text tokenization
+│ ├── 3_train_model.py # Model training
+│ ├── 4_predict.py # Making predictions
+│ ├── convert_to_parquet.py # Convert datasets to Parquet format
+│ └── benchmark_parquet.py # Benchmark Parquet vs Hugging Face performance
 │
-├── utilities/                    # Helper modules
-│   ├── dataset_splitter.py       # Dataset splitting functionality
-│   ├── parquet_utils.py          # Apache Parquet utilities
-│   └── README_PARQUET.md         # Documentation for Parquet implementation
+├── utilities/ # Helper modules
+
+│ ├── dataset_splitter.py # Dataset splitting functionality
+│ ├── parquet_utils.py # Apache Parquet utilities
+│ └── README_PARQUET.md # Documentation for Parquet implementation
 │
-├── models/                       # Trained models
-│   └── distilbert-bot-detector/  # Trained model files
+├── models/ # Trained models
+│ └── distilbert-bot-detector/ # Trained DistilBERT model files
 │
-├── benchmark_results/            # Performance comparison results
-│   ├── storage_comparison.png    # Storage efficiency charts
-│   ├── loading_comparison.png    # Loading time charts
-│   ├── processing_comparison.png # Processing time charts
-│   ├── memory_comparison.png     # Memory usage charts
-│   └── parquet_performance.md    # Detailed benchmark report
+├── data/ # Datasets (original and generated)
+│ ├── Twibot-20/ # Original dataset files (place node_new.json, etc. here)
+│ ├── twibot20_fixed_dataset/ # (Generated - HF Format)
+│ ├── twibot20_fixed_tokenized/ # (Generated - HF Format)
+│ ├── twibot20_llama_tokenized/ # (Generated - Alternative tokenizer for T5 model)
+│ ├── twibot20_fixed_parquet/ # (Optional - Parquet Format)
+│ ├── twibot20_parquet/ # (Optional - Intermediate Parquet storage)
+│ └── twibot20_tokenized_parquet/ # (Optional - Parquet Format)
 │
-└── README.md                     # This file
-```
+├── benchmark_results/ # Performance comparison results
+│ ├── storage_comparison.png # Storage efficiency charts
+│ ├── loading_comparison.png # Loading time charts
+│ ├── processing_comparison.png # Processing time charts
+│ ├── memory_comparison.png # Memory usage charts
+│ └── parquet_performance.md # Detailed benchmark report
+│
+├── README.md # This file
 
-## 3. Pipeline
 
-The project follows a 4-step pipeline:
 
-1. **Data Extraction** (`scripts/1_fix_dataset.py`): Extracts and preprocesses profile text from the Twibot-20 dataset.
-2. **Tokenization** (`scripts/2_tokenize_dataset.py`): Tokenizes the text data using the DistilBERT tokenizer.
-3. **Training** (`scripts/3_train_model.py`): Fine-tunes a DistilBERT model on the tokenized data.
-4. **Prediction** (`scripts/4_predict.py`): Uses the trained model to make predictions on new data.
+## 3. Pipeline Overview
 
-All pipeline steps support both Hugging Face dataset format and Apache Parquet format for efficient data storage and processing.
+The project follows a 4-step pipeline, executed via scripts in the `scripts/` directory:
+
+1.  **Data Extraction & Preprocessing** (`1_fix_dataset.py`): Loads raw data, extracts profile/tweet text, cleans it, splits into train/validation/test sets, and saves the processed dataset.
+2.  **Tokenization** (`2_tokenize_dataset.py`): Loads the processed dataset and converts the text into tokens suitable for the DistilBERT model.
+3.  **Model Training** (`3_train_model.py`): Loads the tokenized dataset and fine-tunes the DistilBERT model for bot classification. Evaluates the model.
+4.  **Prediction** (`4_predict.py`): Loads the fine-tuned model and provides an interface for classifying new text samples.
+
+Each step (`1`, `2`, `3`) supports using either the standard Hugging Face dataset format or the Apache Parquet format via the `--use-parquet` flag for enhanced storage efficiency.
 
 ## 4. Data
 
-- **Source:** The Twibot-20 dataset, a large-scale Twitter bot detection benchmark.
+### 4.1. Source Files
+- **Location:** Expected in `data/Twibot-20/`
 - **Files Used:**
-  - `node_new.json`: Contains user profile information and tweets
-  - `label_new.json`: Contains labels (bot or human) for users
-  - `split_new.json`: Contains train/test splits
-- **Directory Structure:**
-  - `data/Twibot-20/`: Contains the original dataset files
-    - `edge_new.json`: Network connections between users (not used in this model)
-    - `label_new.json`: Binary labels (bot/human) for all users
-    - `node_new.json`: Raw user profile data and tweet content
-    - `split_new.json`: Original dataset partitioning
-  - `data/twibot20_fixed_dataset/`: Contains the processed data with HuggingFace structure
-    - `dataset_dict.json`: Stores dataset configuration
-    - `dataset_info.json`: Contains detailed statistics for all splits
-    - Separate folders for each data split (train/validation/test)
-  - `data/twibot20_fixed_parquet/`: Contains the processed data in Apache Parquet format
-    - `train.parquet`: Train split data in columnar format
-    - `validation.parquet`: Validation split data in columnar format
-    - `test.parquet`: Test split data in columnar format
-  - `data/twibot20_fixed_tokenized/`: Contains the tokenized dataset in HuggingFace format
-    - `dataset_dict.json`: Stores tokenized dataset configuration
-    - Separate folders for each tokenized split (train/validation/test)
-  - `data/twibot20_tokenized_parquet/`: Contains the tokenized dataset in Apache Parquet format
-    - `train.parquet`: Tokenized train split in columnar format
-    - `validation.parquet`: Tokenized validation split in columnar format
-    - `test.parquet`: Tokenized test split in columnar format
-- **Preparation Steps:**
-  - Raw JSON data is loaded from the three files
-  - Text is extracted by combining username, name, description, location, and up to 5 tweets
-  - The extracted text is cleaned by removing URLs and extra whitespace
-  - The data is converted to Hugging Face `DatasetDict` format
-  - The train set is split into train and validation sets (90/10 ratio) with stratification by label
-  - The processed data is saved in both Hugging Face format and Apache Parquet format
-  - Final dataset statistics:
+    - `node_new.json`: Contains user profile information and potentially tweets. Structure: Dict mapping `user_id` (str) to user data (dict).
+        ```json
+        { "u17461978": { "description": "...", "name": "SHAQ", ... }, ... }
+        ```
+    - `label_new.json`: Maps `user_id` (str) to label ('human' or 'bot').
+        ```json
+        { "u17461978": "human", "u1297437077403885568": "bot", ... }
+        ```
+    - `split_new.json`: Defines original train/test user ID lists.
+        ```json
+        { "train": ["u17461978", ...], "test": [...], "dev": [...] }
+        ```
+
+### 4.2. Generated Data Formats
+The pipeline generates processed and tokenized datasets, which can be stored in two formats:
+
+1.  **Hugging Face Disk Format:**
+    - Default format. Stored in `data/twibot20_fixed_dataset/` and `data/twibot20_fixed_tokenized/`.
+    - Consists of `dataset_dict.json`, `dataset_info.json`, and subfolders for each split containing Apache Arrow files (`.arrow`) and index files (`.idx`). Optimized for fast loading and certain operations within the `datasets` library.
+2.  **Apache Parquet Format:**
+    - Optional format, enabled with `--use-parquet`. Stored in `data/twibot20_fixed_parquet/` and `data/twibot20_tokenized_parquet/`.
+    - Consists of subfolders for each split containing one or more `.parquet` files. Parquet is a columnar storage format offering high compression and efficiency for large datasets. Metadata is stored alongside in `dataset_info.json` and `state.json`.
+
+### 4.3. Data Preparation Steps
+*(Executed by `scripts/1_fix_dataset.py`)*
+- Raw JSON data is loaded.
+- Text is extracted by combining: `Username`, `Name`, `Description`, `Location`, and up to 5 recent `Tweets` (if available).
+- Text is cleaned: URLs removed, extra whitespace normalized.
+- Data is converted to a Hugging Face `DatasetDict`.
+- The initial 'train' split is further divided into 'train' (90%) and 'validation' (10%) splits using stratified sampling based on the 'label' column (via `utilities/dataset_splitter.py`).
+- The final `DatasetDict` (containing 'train', 'validation', 'test' splits) is saved to disk (either HF format or Parquet).
+- **Final Dataset Statistics:**
     - Train: 7,450 samples (56.1% bots, 43.9% humans)
     - Validation: 828 samples (56.0% bots, 44.0% humans)
     - Test: 1,183 samples (54.1% bots, 45.9% humans)
-    - Average text length: ~150 characters per user
-    - Storage efficiency with Parquet: 14.5x reduction (16MB → 1.1MB)
+    - Average combined text length: ~150 characters per user.
+
+### 4.4. Data Structures
+- **Raw Data:** Primarily Python dictionaries loaded from JSON.
+- **Processed/Tokenized Data (in memory):** `datasets.DatasetDict`. This object holds multiple `datasets.Dataset` instances (one per split: train, validation, test).
+- **`datasets.Dataset` Structure:** Represents a table-like structure. Key columns generated by the pipeline:
+    - `user_id` (`string`): User identifier.
+    - `text` (`string`): The combined, cleaned text from profile and tweets.
+    - `features` (`string`): JSON string of the raw node data (for potential future use).
+    - `label` (`ClassLabel(names=['human', 'bot'])`): Integer label (0 or 1).
+    - `input_ids` (`Sequence(int32)`): *(Added after tokenization)* List of token IDs.
+    - `attention_mask` (`Sequence(int8)`): *(Added after tokenization)* Mask indicating real tokens vs padding.
 
 ## 5. Methodology
 
-- **Preprocessing - Tokenization:**
-  - Profile and tweet text is tokenized using the `distilbert-base-uncased` tokenizer
-  - Truncation is applied to handle sequences longer than the model's max length (512 tokens)
-  - Dynamic padding is used during training (via `DataCollatorWithPadding`)
-  - Tokenization statistics:
-    - Average tokens per sample: ~41 tokens
-    - Maximum tokens in a sample: ~300 tokens
-    - Less than 1% of samples exceeded the model's max length
-    - Only ~2% of samples had just special tokens (indicating empty text)
-  - The tokenized dataset is saved in both Hugging Face format (`twibot20_fixed_tokenized`) and Apache Parquet format (`twibot20_tokenized_parquet`)
-  - Storage efficiency with Parquet for tokenized data: 3.4x reduction (10MB → 2.9MB)
+### 5.1. Preprocessing - Tokenization
+*(Executed by `scripts/2_tokenize_dataset.py`)*
+- **Tokenizer:** `distilbert-base-uncased` from Hugging Face Transformers. It converts text into sequences of numerical IDs.
+- **Process:** The `text` column of the processed dataset is tokenized.
+- **Parameters:**
+    - `truncation=True`: Sequences longer than the model's maximum input length (512 tokens for DistilBERT) are truncated.
+    - `padding=False`: Padding is applied dynamically per batch during training by the `DataCollatorWithPadding`.
+- **Output:** Adds `input_ids` and `attention_mask` columns to the dataset.
+- **Statistics (Train Split):**
+    - Average tokens per sample: ~41 tokens.
+    - Maximum tokens in a sample: ~300 tokens.
+    - Samples exceeding max length (truncated): < 1%.
+    - Samples with essentially empty text (≤ 2 tokens): ~2%.
+- **Storage:** The tokenized dataset is saved (HF format or Parquet).
 
-- **Model:**
-  - Base model: `distilbert-base-uncased` loaded via `AutoModelForSequenceClassification`
-  - Configuration: `num_labels=2` with label mapping `{0: "human", 1: "bot"}`
-  - The model has ~66 million parameters
+### 5.2. Model Architecture
+- **Base Model:** `distilbert-base-uncased`. A smaller, faster version of BERT, maintaining good performance. Uses the Transformer architecture.
+- **Task Adaptation:** Fine-tuned for sequence classification using `AutoModelForSequenceClassification`. A classification head (a linear layer) is placed on top of the base DistilBERT model's pooled output.
+- **Configuration:** `num_labels=2`, `id2label={0: "human", 1: "bot"}`, `label2id={"human": 0, "bot": 1}`.
 
-- **Training:**
-  - Training is performed using the Hugging Face `Trainer` API
-  - Hyperparameters:
-    - Learning rate: 5e-5
-    - Batch size: 16 per device
-    - Maximum epochs: 3 (with early stopping)
-    - Weight decay: 0.01
-    - Optimizer: AdamW (default in Trainer)
-  - Training can utilize Apple Silicon MPS backend for acceleration when available
-  - Early stopping is implemented with patience of 2 epochs
-  - Evaluation metrics: accuracy, precision, recall, and F1-score
+### 5.3. Training Process
+*(Executed by `scripts/3_train_model.py`)*
+- **Framework:** Hugging Face `Trainer` API.
+- **Optimizer:** AdamW (default).
+- **Key Hyperparameters:**
+    - Learning Rate: 5e-5
+    - Batch Size: 16 per device
+    - Max Epochs: 3
+    - Weight Decay: 0.01
+- **Evaluation:** Performed on the validation set after each epoch. Metrics: Accuracy, Precision, Recall, F1-Score (weighted).
+- **Best Model Selection:** Based on the highest F1-score achieved on the validation set.
+- **Early Stopping:** Training stops if the validation F1-score does not improve for 2 consecutive epochs.
+- **Hardware Acceleration:** Automatically uses MPS (Apple Silicon) or CUDA (NVIDIA GPU) if available, otherwise CPU.
 
 ## 6. Results
 
-- **Quantitative Results:**
+- **Final Evaluation (Test Set):** The best model checkpoint (selected based on validation F1) was evaluated on the held-out test set.
 
   | Metric          | Score  |
   |-----------------|--------|
@@ -146,466 +206,237 @@ All pipeline steps support both Hugging Face dataset format and Apache Parquet f
   | Test F1-Score   | 0.77   |
   | Test Loss       | 0.52   |
 
-- **Validation Performance:**
-  - Peak validation F1-score: 0.79 (reached at epoch 2)
-  - Early stopping activated after epoch 3 (no improvement in F1-score)
+- **Validation Performance Trend:**
+  - Peak validation F1-score of 0.79 was achieved at the end of epoch 2.
+  - Early stopping triggered after epoch 3, indicating no further improvement.
+- **Training Curves:** Visualizations of training/validation loss and metrics over epochs can be found in `models/distilbert-bot-detector/training_curves.png`. *(Ensure this file is generated and saved there by `3_train_model.py` or move it)*
 
 ## 7. Discussion & Conclusion
 
-- **Interpretation:**
-  - The model achieved a 77% F1-score classifying bots based only on profile text, indicating that user profiles contain strong signals for bot detection.
-  - Profile information (username, name, description, location) provides sufficient context for the model to distinguish between bots and humans with reasonable accuracy.
+### 7.1. Interpretation
+- The fine-tuned DistilBERT model achieved a respectable F1-score of 77% and accuracy of 78% on the test set using only profile text and limited tweet data.
+- This indicates that the textual content available in user profiles (and a few recent tweets) contains significant signals that the model can learn to distinguish between human and bot accounts within the Twibot-20 dataset context.
 
-- **Limitations:**
-  - Tweet content was not available/used in this model, which could potentially improve performance.
-  - The model may struggle with sophisticated bots that have human-like profiles.
-  - Performance could be improved with additional features like user behavior patterns, network structure, or temporal activity.
+### 7.2. Limitations
+- **Data Scope:** The primary limitation is the reliance on limited textual data. Performance could likely be improved by incorporating user metadata (account age, follower/following ratio), behavioral patterns (posting frequency, content type), or network information (connections to known bots/humans), which were not used here.
+- **Tweet Availability:** The `node_new.json` file did not consistently contain tweet data for all users, limiting the model's exposure to actual user-generated content beyond the profile.
+- **Sophisticated Bots:** The model might struggle against advanced bots designed to mimic human profiles closely or those with very sparse profiles.
+- **Generalization:** Performance on different Twitter datasets or newer bot types may vary. The Twibot-20 dataset has specific characteristics.
+- **Text Cleaning & Tokenization:** Basic cleaning was applied. More advanced NLP techniques (e.g., handling emojis, non-standard characters, language detection) were not implemented. Truncation affects a small percentage (<1%) of very long profiles/tweet combinations.
 
-- **Conclusion:**
-  - We successfully fine-tuned a DistilBERT model on Twitter profile data to detect bots with 78% accuracy.
-  - This demonstrates that transformer-based models can effectively leverage the limited text in user profiles for bot detection.
-  - The model provides a strong baseline that could be enhanced with additional data sources in future work.
+### 7.3. Conclusion
+- We successfully fine-tuned DistilBERT for Twitter bot detection using profile/tweet text from Twibot-20, achieving 78% accuracy.
+- The project demonstrates the viability of using Transformer models on limited text data for this task and establishes a solid baseline.
+- The integration of Apache Parquet provides significant storage savings (~5-15x) and offers flexibility for handling larger datasets or integration with other tools, although processing speed trade-offs exist compared to the native Hugging Face format for this specific dataset size.
 
 ## 8. Usage Instructions
 
-### 1. Data Extraction
+### 8.1. Prerequisites
+1.  Clone the repository.
+2.  Install required Python packages:
+    ```bash
+    pip install -r requirements.txt
+    ```
+3.  Download the Twibot-20 dataset files (`node_new.json`, `label_new.json`, `split_new.json`) and place them inside the `data/Twibot-20/` directory.
 
+### 8.2. Running the Pipeline (Default - HF Format)
+Execute the scripts sequentially:
 ```bash
 python scripts/1_fix_dataset.py
-```
-
-This script extracts profile text from the Twibot-20 dataset and creates a new dataset with better text content for training. The data is saved in both Hugging Face and Parquet formats.
-
-### 2. Tokenization
-
-```bash
-# Using Hugging Face format
 python scripts/2_tokenize_dataset.py
-
-# Using Parquet format
-python scripts/2_tokenize_dataset.py --use-parquet
-```
-
-This script tokenizes the fixed dataset using the DistilBERT tokenizer. You can choose between Hugging Face format or Parquet format.
-
-### 3. Training
-
-```bash
-# Using Hugging Face format
 python scripts/3_train_model.py
+python scripts/4_predict.py # For interactive prediction
+```
 
-# Using Parquet format
+This will generate datasets in data/twibot20_fixed_dataset/ and data/twibot20_fixed_tokenized/, and the trained model in models/distilbert-bot-detector/.
+
+### 8.3. Running the Pipeline (Optional - Parquet Format)
+
+Use the --use-parquet flag for the processing and training steps:
+
+```bash
+python scripts/1_fix_dataset.py --use-parquet
+python scripts/2_tokenize_dataset.py --use-parquet
 python scripts/3_train_model.py --use-parquet
+python scripts/4_predict.py # Prediction script uses the saved model regardless of training data format
 ```
 
-This script fine-tunes a DistilBERT model on the tokenized data. You can choose between Hugging Face format or Parquet format.
+This will generate datasets in data/twibot20_fixed_parquet/ and data/twibot20_tokenized_parquet/. The model is saved in the same location (models/distilbert-bot-detector/).
 
-### 4. Prediction
+### 8.4. Optional Scripts
+
+Convert existing HF datasets to Parquet:
 
 ```bash
-python scripts/4_predict.py
+python scripts/convert_to_parquet.py --input_dir data/twibot20_fixed_dataset --output_dir data/twibot20_fixed_parquet
+python scripts/convert_to_parquet.py --input_dir data/twibot20_fixed_tokenized --output_dir data/twibot20_tokenized_parquet
 ```
 
-This script loads the trained model and allows you to make predictions on new text data.
-
-### 5. Converting to Parquet
+Run performance benchmarks (requires datasets in both formats):
 
 ```bash
-python scripts/convert_to_parquet.py
+python scripts/benchmark_parquet.py
 ```
 
-This script converts existing datasets to Parquet format for more efficient storage and faster loading.
-
-## 9. Script Documentation
-
-Each script in this project serves a specific purpose in the data processing and model training pipeline:
-
-### utilities/dataset_splitter.py
-- **Purpose**: Splits datasets into train, validation, and test sets with stratification
-- **Input**: A Hugging Face DatasetDict with 'train' and 'test' splits
-- **Output**: A DatasetDict with 'train', 'validation', and 'test' splits
-- **When to use**: Used by 1_fix_dataset.py to create validation splits
-
-### utilities/parquet_utils.py
-- **Purpose**: Provides utility functions for working with Apache Parquet files
-- **Key features**:
-  - Convert Hugging Face datasets to Parquet format
-  - Load Parquet files as Hugging Face datasets
-  - Get metadata and schema information from Parquet files
-  - Read samples from Parquet files
-- **When to use**: Used by scripts to save and load data in Parquet format
-
-### scripts/1_fix_dataset.py
-- **Purpose**: Processes raw Twibot-20 data files and extracts text from user profiles and tweets
-- **Input**: Raw JSON files from the Twibot-20 dataset
-- **Output**: Creates the `twibot20_fixed_dataset` directory with processed data and `twibot20_fixed_parquet` with Parquet data
-- **Key features**:
-  - Extracts username, name, description, location and up to 5 tweets when available
-  - Cleans text by removing URLs and extra whitespace
-  - Uses dataset_splitter.py to create train/validation/test splits
-  - Saves data in both Hugging Face and Parquet formats
-- **Next step**: Run 2_tokenize_dataset.py after this script
-
-### scripts/2_tokenize_dataset.py
-- **Purpose**: Tokenizes the processed dataset for input to the DistilBERT model
-- **Input**: The fixed dataset from `twibot20_fixed_dataset` or `twibot20_fixed_parquet` directory
-- **Output**: Creates the `twibot20_fixed_tokenized` or `twibot20_tokenized_parquet` directory with tokenized data
-- **Key features**:
-  - Uses DistilBERT tokenizer to process the text
-  - Provides detailed tokenization statistics
-  - Shows examples of tokenized output
-  - Supports both Hugging Face and Parquet formats with `--use-parquet` flag
-- **Next step**: Run 3_train_model.py after this script
-
-### scripts/3_train_model.py
-- **Purpose**: Fine-tunes a DistilBERT model on the tokenized data for bot detection
-- **Input**: The tokenized dataset from `twibot20_fixed_tokenized` or `twibot20_tokenized_parquet` directory
-- **Output**: Trained model saved to the `models/distilbert-bot-detector` directory
-- **Key features**:
-  - Supports MPS for Apple Silicon or CUDA for NVIDIA GPUs
-  - Implements early stopping to prevent overfitting
-  - Evaluates on test set after training
-  - Supports both Hugging Face and Parquet formats with `--use-parquet` flag
-- **Next step**: Use the trained model for predictions
-
-### scripts/4_predict.py
-- **Purpose**: Uses the trained model to make predictions on new text inputs
-- **Input**: The trained model from `models/distilbert-bot-detector` directory
-- **Output**: Bot/human predictions for provided text inputs
-- **Usage**: Provides an interactive interface and sample predictions
-- **When to use**: After training the model to make predictions on new data
-
-### scripts/convert_to_parquet.py
-- **Purpose**: Converts existing datasets to Apache Parquet format
-- **Input**: Datasets in Hugging Face format
-- **Output**: Datasets in Parquet format
-- **Key features**:
-  - Converts raw JSON data to Parquet
-  - Converts fixed dataset to Parquet
-  - Converts tokenized dataset to Parquet
-  - Provides file size comparisons
-- **When to use**: When you want to optimize storage space and loading times
-
-### scripts/benchmark_parquet.py
-- **Purpose**: Benchmarks performance of Parquet vs Hugging Face dataset formats
-- **Input**: Datasets in both Hugging Face and Parquet formats
-- **Output**: Performance metrics and visualizations in the `benchmark_results` directory
-- **Key features**:
-  - Measures storage efficiency (file size)
-  - Benchmarks loading time for both formats
-  - Compares processing performance (filtering, mapping, sorting)
-  - Analyzes memory usage
-  - Generates charts and a detailed markdown report
-- **When to use**: When you want to evaluate the performance trade-offs between formats
-
-## 10. Data Processing Workflow
-
-This section provides a detailed explanation of how raw Twitter data is processed, transformed, and prepared for the bot detection model. The workflow follows a series of well-defined steps, each handled by specific functions across multiple scripts.
-
-### 10.1 Raw Data Loading and Initial Processing
-
-**Script**: `scripts/1_fix_dataset.py`
-**Key Function**: `load_twibot20_data(data_dir)`
-
-This function loads the raw Twibot-20 dataset from three JSON files:
-- `node_new.json`: Contains user profile information and tweets
-- `label_new.json`: Contains binary labels (bot/human) for each user
-- `split_new.json`: Contains the original train/test split information
-
-```python
-def load_twibot20_data(data_dir):
-    # Load the data files
-    with open(os.path.join(data_dir, "node_new.json"), 'r', encoding='utf-8') as f:
-        nodes = json.load(f)
-
-    with open(os.path.join(data_dir, "label_new.json"), 'r', encoding='utf-8') as f:
-        labels = json.load(f)
-        # Remove header if exists
-        if "id" in labels:
-            del labels["id"]
-
-    with open(os.path.join(data_dir, "split_new.json"), 'r', encoding='utf-8') as f:
-        splits = json.load(f)
-```
-
-The function returns three Python dictionaries:
-1. `nodes`: Maps user IDs to their profile data and tweets
-2. `labels`: Maps user IDs to their labels ('bot' or 'human')
-3. `splits`: Maps split names ('train', 'test') to lists of user IDs
-
-### 10.2 Text Extraction and Cleaning
-
-**Script**: `scripts/1_fix_dataset.py`
-**Key Functions**: `extract_text_from_user(user_data)` and `clean_text(text)`
-
-These functions transform the raw user data into clean, meaningful text for the model:
-
-1. **Text Extraction** (`extract_text_from_user`):
-   - Extracts and formats profile information (username, name, description, location)
-   - Extracts up to 5 recent tweets from each user
-   - Combines all text parts with appropriate labels and formatting
-
-```python
-def extract_text_from_user(user_data):
-    text_parts = []
-
-    # Extract profile information
-    if 'username' in user_data and user_data['username']:
-        text_parts.append(f"Username: {user_data['username']}")
-
-    # [Similar extraction for name, description, location]
-
-    # Extract tweets (up to 5)
-    if 'tweet' in user_data and isinstance(user_data['tweet'], list):
-        tweet_texts = []
-        for tweet in user_data['tweet'][:5]:
-            if 'text' in tweet and tweet['text']:
-                tweet_texts.append(tweet['text'])
-
-        if tweet_texts:
-            text_parts.append("Tweets:")
-            for i, tweet_text in enumerate(tweet_texts):
-                text_parts.append(f"  Tweet {i+1}: {tweet_text}")
-
-    return "\n".join(text_parts)
-```
-
-2. **Text Cleaning** (`clean_text`):
-   - Removes URLs using regular expressions
-   - Normalizes whitespace
-   - Handles edge cases like non-string inputs
-
-```python
-def clean_text(text):
-    if not isinstance(text, str):
-        return ""
-
-    # Remove URLs
-    text = re.sub(r'https?://\S+', '', text)
-
-    # Remove extra whitespace
-    text = re.sub(r'\s+', ' ', text).strip()
-
-    return text
-```
-
-### 10.3 Dataset Creation and Formatting
-
-**Script**: `scripts/1_fix_dataset.py`
-**Key Function**: `convert_to_hf_dataset(nodes, labels, splits)`
-
-This function transforms the processed data into a structured Hugging Face `DatasetDict` format:
-
-1. Creates separate datasets for each split ('train', 'test')
-2. For each user in a split:
-   - Extracts and cleans text using the functions above
-   - Converts labels to integers (0 for human, 1 for bot)
-   - Stores the full user features as a JSON string
-3. Defines proper feature types for the dataset
-4. Creates a `Dataset` object for each split
-5. Returns a `DatasetDict` containing all splits
-
-```python
-def convert_to_hf_dataset(nodes, labels, splits):
-    datasets = {}
-
-    for split_name in ['train', 'test']:
-        user_ids = []
-        texts = []
-        features_list = []
-        label_list = []
-
-        for user_id in splits[split_name]:
-            if user_id in nodes and user_id in labels:
-                # Extract and clean text
-                user_text = extract_text_from_user(nodes[user_id])
-                cleaned_text = clean_text(user_text)
-
-                # Store data
-                user_ids.append(user_id)
-                texts.append(cleaned_text)
-                features_list.append(json.dumps(nodes[user_id]))
-                label_value = 1 if labels[user_id] == 'bot' else 0
-                label_list.append(label_value)
-
-        # Define features with proper types
-        features = Features({
-            'user_id': Value('string'),
-            'text': Value('string'),
-            'features': Value('string'),
-            'label': ClassLabel(num_classes=2, names=['human', 'bot'])
-        })
-
-        # Create Dataset
-        datasets[split_name] = Dataset.from_dict({
-            'user_id': user_ids,
-            'text': texts,
-            'features': features_list,
-            'label': label_list
-        }, features=features)
-
-    return DatasetDict(datasets)
-```
-
-### 10.4 Dataset Splitting
-
-**Script**: `utilities/dataset_splitter.py`
-**Key Function**: `split_dataset(combined_dataset, test_size, stratify_by_column, random_state)`
-
-This utility function splits the 'train' split into 'train' and 'validation' splits:
-
-1. Verifies that the input is a valid `DatasetDict` with required splits
-2. Checks if the stratification column is a `ClassLabel` type
-3. Performs stratified splitting to maintain label distribution:
-   - If the column is a `ClassLabel`, uses Hugging Face's built-in `train_test_split`
-   - Otherwise, uses scikit-learn's `train_test_split` with manual stratification
-4. Creates a new `DatasetDict` with 'train', 'validation', and 'test' splits
-
-```python
-def split_dataset(combined_dataset, test_size=0.1, stratify_by_column='label', random_state=42):
-    # Check if the stratify_by_column is a ClassLabel
-    is_class_label = isinstance(combined_dataset['train'].features.get(stratify_by_column), ClassLabel)
-
-    if is_class_label:
-        # Use Hugging Face's built-in stratified split
-        train_test_split = combined_dataset['train'].train_test_split(
-            test_size=test_size,
-            stratify_by_column=stratify_by_column,
-            seed=random_state
-        )
-    else:
-        # Use scikit-learn for stratification
-        from sklearn.model_selection import train_test_split as sklearn_split
-
-        indices = np.arange(len(combined_dataset['train']))
-        train_indices, val_indices = sklearn_split(
-            indices,
-            test_size=test_size,
-            random_state=random_state,
-            stratify=combined_dataset['train'][stratify_by_column]
-        )
-
-        train_test_split = {
-            'train': combined_dataset['train'].select(train_indices),
-            'test': combined_dataset['train'].select(val_indices)
-        }
-
-    # Create final DatasetDict
-    return DatasetDict({
-        'train': train_test_split['train'],
-        'validation': train_test_split['test'],
-        'test': combined_dataset['test']
-    })
-```
-
-### 10.5 Tokenization for Model Input
-
-**Script**: `scripts/2_tokenize_dataset.py`
-**Key Function**: `preprocess_function(examples)`
-
-This function prepares the text data for input to the DistilBERT model:
-
-1. Loads the DistilBERT tokenizer
-2. Defines a preprocessing function that:
-   - Tokenizes the text data
-   - Applies truncation to handle sequences longer than the model's max length
-   - Returns input IDs and attention masks
-3. Applies the tokenization to the entire dataset using `dataset.map()`
-
-```python
-# Load tokenizer
-tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
-
-# Define preprocessing function
-def preprocess_function(examples):
-    return tokenizer(
-        examples["text"],
-        truncation=True,
-        padding=False,  # Padding will be handled later by DataCollator
-        max_length=tokenizer.model_max_length
-    )
-
-# Apply tokenization
-tokenized_dataset = dataset.map(
-    preprocess_function,
-    batched=True,
-    desc="Tokenizing dataset"
-)
-```
-
-### 10.6 Data Format Conversion (Optional)
-
-**Script**: `utilities/parquet_utils.py`
-**Key Functions**: `save_dataset_to_parquet(dataset, output_dir)` and `load_parquet_as_dataset(parquet_path)`
-
-These utility functions convert between Hugging Face datasets and Apache Parquet format:
-
-1. **Saving to Parquet** (`save_dataset_to_parquet`):
-   - Converts Hugging Face datasets to pandas DataFrames
-   - Converts DataFrames to PyArrow Tables
-   - Writes Tables to Parquet files with compression
-
-2. **Loading from Parquet** (`load_parquet_as_dataset`):
-   - Reads Parquet files into pandas DataFrames
-   - Reconstructs proper feature types (ClassLabel, Sequence, etc.)
-   - Converts DataFrames back to Hugging Face Datasets
-   - Handles both individual datasets and dataset dictionaries
-
-### 10.7 Data Flow Summary
-
-The complete data processing workflow follows these steps:
-
-1. **Raw Data Loading**: JSON files → Python dictionaries
-2. **Text Extraction**: User profiles and tweets → Structured text
-3. **Text Cleaning**: Raw text → Cleaned text (URLs removed, whitespace normalized)
-4. **Dataset Creation**: Cleaned data → Hugging Face DatasetDict
-5. **Dataset Splitting**: Original splits → Train/Validation/Test splits
-6. **Tokenization**: Text data → Model-ready token IDs and attention masks
-7. **Format Conversion** (Optional): Hugging Face format ↔ Apache Parquet format
-
-This workflow transforms raw, unstructured Twitter data into a clean, structured, and tokenized format that's ready for input to the DistilBERT model for bot detection.
-
-## 11. Parquet vs Hugging Face Performance Comparison
-
-We conducted detailed benchmarks to compare the performance of Apache Parquet and Hugging Face dataset formats in our Twitter bot detection pipeline. The results highlight the trade-offs between storage efficiency and processing performance.
-
-### 11.1 Storage Efficiency
-
-| Dataset Type | Hugging Face Size (MB) | Parquet Size (MB) | Compression Ratio |
-|--------------|------------------------|-------------------|-------------------|
-| Fixed Dataset | 15.95 | 1.09 | 14.59x |
-| Tokenized Dataset | 10.31 | 1.83 | 5.65x |
-
-Parquet provides exceptional storage efficiency, reducing the fixed dataset size by 14.59x and the tokenized dataset size by 5.65x. This makes it ideal for storing large datasets.
-
-### 11.2 Loading and Processing Performance
-
-| Operation | Hugging Face | Parquet | Notes |
-|-----------|--------------|---------|-------|
-| Loading Fixed Dataset | Faster | Slower | HF is optimized for quick in-memory loading |
-| Loading Tokenized Dataset | Faster | Slower | Parquet requires additional deserialization |
-| Processing Operations | Faster | Slower | HF has optimized in-memory operations |
-
-While Hugging Face datasets load and process faster in our benchmarks, this is primarily due to the small size of our test dataset (Twibot-20). For larger datasets, Parquet's columnar format would likely show performance advantages as it allows reading only the required columns and benefits from efficient compression.
-
-### 11.3 When to Use Each Format
-
-- **Use Hugging Face format when**:
-  - Working with small to medium datasets
-  - Performing frequent in-memory operations
-  - Quick iteration during development
-
-- **Use Parquet format when**:
-  - Working with large datasets in general
-  - Storage space is a concern
-  - Performing column-specific operations
-  - Sharing data with other tools and frameworks
-
-### 11.4 Conclusion
-
-For the Twibot-20 dataset, the storage benefits of Parquet (5-15x reduction) outweigh the slight performance overhead. For larger datasets, Parquet would likely provide both storage and performance benefits, especially when working with limited memory resources.
-
-## 12. Requirements
+(Results appear in console and benchmark_results/)
+
+9. API and Module Documentation
+
+(Detailed description of inputs, outputs, and key functions for each script/module)
+9.1. scripts/1_fix_dataset.py
+
+    Fonctionnalité: Charge les données brutes JSON, extrait et nettoie le texte des profils/tweets, crée un DatasetDict avec les colonnes user_id, text, features (JSON string du node), label (0/1), effectue la division train/validation et sauvegarde le dataset traité.
+
+    Fonctions Clés: load_twibot20_data, extract_text_from_user, clean_text, convert_to_hf_dataset, main.
+
+    Entrée: Chemin vers le dossier contenant les fichiers JSON originaux (data/Twibot-20/). Argument optionnel --use-parquet.
+
+    Sortie: Dataset (DatasetDict) sauvegardé sur disque (data/twibot20_fixed_dataset/) OU au format Parquet (data/twibot20_fixed_parquet/).
+
+9.2. scripts/2_tokenize_dataset.py
+
+    Fonctionnalité: Charge le dataset traité (HF ou Parquet), applique la tokenisation DistilBERT et sauvegarde le dataset résultant.
+
+    Fonctions Clés: preprocess_function, main.
+
+    Entrée: Chemin vers le dataset traité (data/twibot20_fixed_dataset/ ou data/twibot20_fixed_parquet/). Argument optionnel --use-parquet.
+
+    Sortie: Dataset tokenisé (DatasetDict) sauvegardé sur disque (data/twibot20_fixed_tokenized/) OU au format Parquet (data/twibot20_tokenized_parquet/).
+
+9.3. scripts/3_train_model.py
+
+    Fonctionnalité: Charge le dataset tokenisé (HF ou Parquet), configure et fine-tune le modèle DistilBERT, évalue et sauvegarde le modèle.
+
+    Fonctions Clés: compute_metrics, main.
+
+    Entrée: Chemin vers le dataset tokenisé (data/twibot20_fixed_tokenized/ ou data/twibot20_tokenized_parquet/). Argument optionnel --use-parquet.
+
+    Sortie: Modèle fine-tuné (models/distilbert-bot-detector/), résultats d'évaluation (console), courbes d'entraînement (training_curves.png).
+
+9.4. scripts/4_predict.py
+
+    Fonctionnalité: Charge le modèle fine-tuné pour prédictions interactives.
+
+    Fonctions Clés: predict_bot_probability, main.
+
+    Entrée: Texte à classifier (via invite), chemin vers modèle (models/distilbert-bot-detector/).
+
+    Sortie: Prédiction ('Human'/'Bot') et confiance (console).
+
+9.5. scripts/convert_to_parquet.py
+
+    Fonctionnalité: Convertit un dataset format disque HF en format Parquet.
+
+    Arguments: --input_dir, --output_dir.
+
+    Utilisation: Outil manuel pour la conversion de format.
+
+9.6. scripts/benchmark_parquet.py
+
+    Fonctionnalité: Compare les performances des formats HF disque et Parquet.
+
+    Entrée: Chemins vers les datasets dans les deux formats.
+
+    Sortie: Résultats (console), rapport markdown et graphiques (benchmark_results/).
+
+9.7. utilities/dataset_splitter.py
+
+    Fonctionnalité: Module utilitaire pour diviser un dataset HF de manière stratifiée.
+
+    API: split_dataset(combined_dataset, test_size=0.1, stratify_by_column='label', random_state=42) -> DatasetDict.
+
+9.8. utilities/parquet_utils.py
+
+    Fonctionnalité: Module utilitaire pour la sauvegarde et le chargement de datasets HF au format Parquet.
+
+    API: save_dataset_to_parquet(dataset_dict, output_dir), load_dataset_from_parquet(input_dir) -> DatasetDict.
+
+10. Data Processing Workflow Details
+
+(This section details the sequence of operations transforming raw data into model-ready input, as implemented in the scripts)
+10.1. Raw Data Loading
+
+    Script: scripts/1_fix_dataset.py
+
+    Input: node_new.json, label_new.json, split_new.json
+
+    Process: JSON files are parsed into Python dictionaries (nodes, labels, splits).
+
+10.2. Text Extraction and Cleaning
+
+    Script: scripts/1_fix_dataset.py
+
+    Input: nodes dictionary.
+
+    Process: For each user ID present in the splits, the extract_text_from_user function combines profile fields (Username, Name, Description, Location) and up to 5 tweets into a single string. The clean_text function then removes URLs and normalizes whitespace.
+
+10.3. Dataset Creation and Formatting
+
+    Script: scripts/1_fix_dataset.py
+
+    Input: Cleaned text, labels dictionary, splits dictionary.
+
+    Process: The convert_to_hf_dataset function organizes the data into a DatasetDict with 'train' and 'test' splits. Each entry includes user_id, the cleaned text, the raw features (as JSON string), and the integer label (0/1). Features are explicitly typed (Value, ClassLabel).
+
+10.4. Dataset Splitting
+
+    Script: scripts/1_fix_dataset.py (using utilities/dataset_splitter.py)
+
+    Input: The initial DatasetDict created in step 10.3.
+
+    Process: The split_dataset function takes the 'train' split and divides it stratigraphically by 'label' into a new 'train' split (90%) and a 'validation' split (10%). The original 'test' split is retained.
+
+10.5. Tokenization for Model Input
+
+    Script: scripts/2_tokenize_dataset.py
+
+    Input: The final processed DatasetDict (from HF disk or Parquet).
+
+    Process: The preprocess_function applies the distilbert-base-uncased tokenizer to the text column. It generates input_ids and attention_mask for each sample, truncating sequences longer than 512 tokens. This tokenized data is saved.
+
+10.6. Data Format Conversion (Optional)
+
+    Scripts: scripts/1_fix_dataset.py, scripts/2_tokenize_dataset.py (with --use-parquet), scripts/convert_to_parquet.py
+
+    Input/Output: DatasetDict objects.
+
+    Process: Uses functions from utilities/parquet_utils.py to serialize DatasetDict objects into Parquet files or deserialize them back into DatasetDict objects.
+
+10.7. Data Flow Summary
+
+Raw JSON -> Dicts -> Cleaned Text Strings -> HF DatasetDict (Initial Splits) -> HF DatasetDict (Final Splits) -> Tokenized HF DatasetDict -> Model Input Tensors.
+(Parallel path using Parquet for intermediate storage is available)
+11. Parquet vs Hugging Face Performance Comparison
+
+(This section summarizes the findings from scripts/benchmark_parquet.py. For full details and charts, see benchmark_results/)
+11.1. Storage Efficiency
+
+Apache Parquet demonstrates significant storage savings compared to the default Hugging Face disk format:
+
+    Fixed Dataset: Up to 14.59x smaller (e.g., 16MB HF -> 1.1MB Parquet).
+
+    Tokenized Dataset: Up to 5.65x smaller (e.g., 10MB HF -> 1.8MB Parquet).
+    Conclusion: Parquet is highly effective for reducing disk space usage.
+
+11.2. Loading and Processing Performance
+
+    Loading Time: For this dataset size, loading from the Hugging Face disk format (leveraging memory mapping and Arrow caches) was generally faster than loading from Parquet files, especially for the more complex tokenized dataset.
+
+    Processing Operations: Simple operations like filtering (.filter()) and sorting (.sort()) were often faster using the optimized Hugging Face format. Mapping operations (.map()) showed variable performance.
+    Note: These speed comparisons might favor Parquet more significantly on much larger datasets where reading only necessary columns becomes a major advantage or when I/O becomes the bottleneck.
+
+11.3. When to Use Each Format
+
+    Hugging Face Disk Format: Recommended for small-to-medium datasets, rapid prototyping, and when peak processing speed for common datasets operations is prioritized.
+
+    Apache Parquet Format: Recommended for large datasets, scenarios where disk space is limited, long-term archival, and interoperability with other data processing tools (Spark, Pandas, Dask).
+
+11.4. Conclusion
+
+Parquet offers compelling storage advantages. For the Twibot-20 dataset, the default Hugging Face format provides competitive or superior processing speed due to its optimizations. The choice involves a trade-off based on specific needs (storage vs speed). This project supports both, allowing flexibility.
+12. Requirements
+
+Ensure the following dependencies are installed:
 
 ```
 torch>=1.12.0
@@ -613,17 +444,11 @@ transformers>=4.21.0
 datasets>=2.4.0
 scikit-learn>=1.0.2
 numpy>=1.21.0
-ijson>=3.1.4
-pyarrow>=8.0.0
-pandas>=1.4.0
+pyarrow>=8.0.0  # For Parquet support
+pandas>=1.4.0   # Dependency for Parquet utils
 ```
 
-For Apple Silicon users, ensure you have PyTorch with MPS support:
-```bash
-pip install torch torchvision torchaudio
-```
+Install these dependencies using pip.
 
-For Parquet support, ensure you have PyArrow installed:
-```bash
-pip install pyarrow pandas
-```
+For Apple Silicon users, ensure PyTorch with MPS support is installed.
+
