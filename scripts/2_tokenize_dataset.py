@@ -3,20 +3,42 @@ Tokenize Fixed Twibot-20 Dataset
 
 This script tokenizes the fixed Twibot-20 dataset for sequence classification.
 It uses the DistilBERT tokenizer to prepare the data for training a text classification model.
+The script supports loading data from both Hugging Face format and Apache Parquet format.
 """
 
 from datasets import load_from_disk
 from transformers import AutoTokenizer
 import os
+import sys
+import argparse
+
+# Add project root to path to import utilities
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(script_dir)
+sys.path.append(project_root)
+
+# Import parquet utilities
+from utilities.parquet_utils import load_parquet_as_dataset, save_dataset_to_parquet
 
 def main():
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description='Tokenize the fixed Twibot-20 dataset')
+    parser.add_argument('--use-parquet', action='store_true', help='Use Parquet format instead of Hugging Face format')
+    args = parser.parse_args()
+
     # Define the path to the saved dataset directory
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(script_dir)
-    dataset_path = os.path.join(project_root, "data", "twibot20_fixed_dataset")
-    output_dir = os.path.join(project_root, "data", "twibot20_fixed_tokenized")
 
-    print("[2/4] Tokenizing dataset...")
+    # Set paths based on format
+    if args.use_parquet:
+        dataset_path = os.path.join(project_root, "data", "twibot20_fixed_parquet")
+        output_dir = os.path.join(project_root, "data", "twibot20_tokenized_parquet")
+        print("[2/4] Tokenizing dataset (using Parquet format)...")
+    else:
+        dataset_path = os.path.join(project_root, "data", "twibot20_fixed_dataset")
+        output_dir = os.path.join(project_root, "data", "twibot20_fixed_tokenized")
+        print("[2/4] Tokenizing dataset (using Hugging Face format)...")
 
     # Check if the dataset exists
     if not os.path.exists(dataset_path):
@@ -27,7 +49,11 @@ def main():
     # 1. Load dataset
     print(f"Loading fixed dataset from {dataset_path}...")
     try:
-        dataset = load_from_disk(dataset_path)
+        if args.use_parquet:
+            dataset = load_parquet_as_dataset(dataset_path)
+        else:
+            dataset = load_from_disk(dataset_path)
+
         print("Fixed dataset loaded:")
         print(dataset)
 
@@ -118,16 +144,30 @@ def main():
             os.makedirs(output_dir, exist_ok=True)
 
         print(f"\nSaving tokenized dataset to {output_dir}...")
-        tokenized_dataset.save_to_disk(output_dir)
-        print("Tokenized dataset saved successfully!")
-        print("You can now load it using:")
-        print("from datasets import load_from_disk")
-        print(f"tokenized_dataset = load_from_disk('{output_dir}')")
+
+        if args.use_parquet:
+            # Save in Parquet format
+            save_dataset_to_parquet(tokenized_dataset, output_dir)
+            print("Tokenized dataset saved in Parquet format!")
+            print("You can now load it using:")
+            print("from utilities.parquet_utils import load_parquet_as_dataset")
+            print(f"tokenized_dataset = load_parquet_as_dataset('{output_dir}')")
+        else:
+            # Save in Hugging Face format
+            tokenized_dataset.save_to_disk(output_dir)
+            print("Tokenized dataset saved in Hugging Face format!")
+            print("You can now load it using:")
+            print("from datasets import load_from_disk")
+            print(f"tokenized_dataset = load_from_disk('{output_dir}')")
 
         print("\nNext steps:")
-        print("1. Update scripts/3_train_model.py to use the fixed tokenized dataset")
-        print("   Change: tokenized_dataset_path = os.path.join(project_root, \"data\", \"twibot20_fixed_tokenized\")")
-        print("2. Run 'python scripts/3_train_model.py' to train the model on the fixed dataset")
+        print("1. Update scripts/3_train_model.py to use the tokenized dataset")
+        if args.use_parquet:
+            print("   Change: tokenized_dataset_path = os.path.join(project_root, \"data\", \"twibot20_tokenized_parquet\")")
+            print("   Add: use_parquet = True")
+        else:
+            print("   Change: tokenized_dataset_path = os.path.join(project_root, \"data\", \"twibot20_fixed_tokenized\")")
+        print("2. Run 'python scripts/3_train_model.py' to train the model on the dataset")
 
     except Exception as e:
         print(f"Error tokenizing dataset: {e}")

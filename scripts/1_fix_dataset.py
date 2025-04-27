@@ -3,12 +3,22 @@ Fix Twibot-20 Dataset
 
 This script fixes the Twibot-20 dataset by extracting more meaningful text from the user profiles
 and tweets. It creates a new dataset with better text content for training the bot detection model.
+The dataset is saved in both Hugging Face format and Apache Parquet format for efficient storage and access.
 """
 
 import os
 import json
 from datasets import Dataset, DatasetDict, Features, Value, ClassLabel
 import re
+import sys
+
+# Add project root to path to import utilities
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(script_dir)
+sys.path.append(project_root)
+
+# Import parquet utilities
+from utilities.parquet_utils import save_dataset_to_parquet
 
 def load_twibot20_data(data_dir):
     """
@@ -217,7 +227,7 @@ def main():
     print("\nSplitting train set into train and validation sets...")
     final_dataset = split_dataset(combined_dataset, test_size=0.1, stratify_by_column='label')
 
-    # Save the dataset
+    # Save the dataset in Hugging Face format
     if not os.path.exists(output_dir):
         os.makedirs(output_dir, exist_ok=True)
 
@@ -238,9 +248,19 @@ def main():
     with open(os.path.join(output_dir, 'dataset_info.json'), 'w') as f:
         json.dump(info, f, indent=2)
 
+    # Save the dataset in Parquet format
+    parquet_output_dir = os.path.join(project_root, "data", "twibot20_fixed_parquet")
+    if not os.path.exists(parquet_output_dir):
+        os.makedirs(parquet_output_dir, exist_ok=True)
+
+    print(f"\nSaving fixed dataset in Parquet format to {parquet_output_dir}...")
+    save_dataset_to_parquet(final_dataset, parquet_output_dir)
+
     print("Done!")
-    print(f"The fixed dataset has been saved to {output_dir}")
-    print("Next steps:")
+    print(f"The fixed dataset has been saved to:")
+    print(f"  - Hugging Face format: {output_dir}")
+    print(f"  - Parquet format: {parquet_output_dir}")
+    print("\nNext steps:")
     print("1. Run 'python scripts/2_tokenize_dataset.py' to tokenize the fixed dataset")
     print("2. Run 'python scripts/3_train_model.py' to train the model on the tokenized fixed dataset")
 

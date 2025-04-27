@@ -3,11 +3,14 @@ Train DistilBERT Model for Bot Detection
 
 This script fine-tunes a pre-trained DistilBERT model on the Twibot-20 dataset
 for the task of bot detection (sequence classification).
+The script supports loading data from both Hugging Face format and Apache Parquet format.
 """
 
 import os
+import sys
 import numpy as np
 import torch
+import argparse
 from datasets import load_from_disk
 from transformers import (
     AutoModelForSequenceClassification,
@@ -18,6 +21,14 @@ from transformers import (
     EarlyStoppingCallback,
 )
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
+
+# Add project root to path to import utilities
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(script_dir)
+sys.path.append(project_root)
+
+# Import parquet utilities
+from utilities.parquet_utils import load_parquet_as_dataset
 
 def compute_metrics(eval_pred):
     """
@@ -46,30 +57,48 @@ def compute_metrics(eval_pred):
     }
 
 def main():
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description='Train a DistilBERT model for bot detection')
+    parser.add_argument('--use-parquet', action='store_true', help='Use Parquet format instead of Hugging Face format')
+    args = parser.parse_args()
+
     # Set up paths
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(script_dir)
-    tokenized_dataset_path = os.path.join(project_root, "data", "twibot20_fixed_tokenized")
     output_dir = os.path.join(project_root, "models", "distilbert-bot-detector")
 
-    print("[3/4] Training model...")
+    # Set dataset path based on format
+    if args.use_parquet:
+        tokenized_dataset_path = os.path.join(project_root, "data", "twibot20_tokenized_parquet")
+        print("[3/4] Training model (using Parquet format)...")
+    else:
+        tokenized_dataset_path = os.path.join(project_root, "data", "twibot20_fixed_tokenized")
+        print("[3/4] Training model (using Hugging Face format)...")
 
     # Check if fixed tokenized dataset exists, if not, fall back to original
     if not os.path.exists(tokenized_dataset_path):
-        print(f"Warning: Fixed tokenized dataset not found at {tokenized_dataset_path}")
-        print("Falling back to original tokenized dataset...")
-        tokenized_dataset_path = os.path.join(project_root, "data", "twibot20_tokenized")
+        print(f"Warning: Dataset not found at {tokenized_dataset_path}")
+        if args.use_parquet:
+            print("Falling back to Hugging Face format...")
+            tokenized_dataset_path = os.path.join(project_root, "data", "twibot20_fixed_tokenized")
+            args.use_parquet = False
+        else:
+            print("Falling back to original tokenized dataset...")
+            tokenized_dataset_path = os.path.join(project_root, "data", "twibot20_tokenized")
 
     # Check if tokenized dataset exists
     if not os.path.exists(tokenized_dataset_path):
         print(f"Error: Tokenized dataset not found at {tokenized_dataset_path}")
-        print("Please run tokenize_dataset.py first to create the tokenized dataset.")
+        print("Please run scripts/2_tokenize_dataset.py first to create the tokenized dataset.")
         return
 
     # 1. Load tokenized dataset
     print(f"Loading tokenized dataset from {tokenized_dataset_path}...")
     try:
-        tokenized_dataset = load_from_disk(tokenized_dataset_path)
+        if args.use_parquet:
+            tokenized_dataset = load_parquet_as_dataset(tokenized_dataset_path)
+        else:
+            tokenized_dataset = load_from_disk(tokenized_dataset_path)
         print("Tokenized dataset loaded successfully")
         print(tokenized_dataset)
     except Exception as e:
