@@ -1,0 +1,68 @@
+# Ignore everything
+*
+
+# But not these files...
+!.gitignore
+!README.md
+!*.py
+
+# And not these directories...
+!scripts/
+!utilities/
+!models/
+!llama_model/
+!llama_model/scripts/
+!llama_model/utilities/
+!models/distilbert-bot-detector/
+
+# Ignore Twibot-22 directory
+Twibot-22/
+
+# Ignore data files
+data/
+*/data/
+
+# Ignore model files
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.onnx
+*.h5
+
+# Ignore checkpoints
+checkpoint-*/
+
+# Ignore temporary files
+_archive/
+temp_backup/
+
+# Ignore Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+bin/
+include/
+lib/
+lib64/
+pyvenv.cfg
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Results
+results/
