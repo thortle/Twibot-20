@@ -16,8 +16,22 @@
 !models/distilbert-bot-detector/
 !benchmark_results/
 
-# Ignore Twibot-22 directory
-Twibot-22/
+# Include Twibot-22 directory but exclude large data files
+!Twibot-22/
+!Twibot-22/scripts/
+!Twibot-22/utilities/
+!Twibot-22/models/
+!Twibot-22/models/bot_detection_model/
+!Twibot-22/data/
+!Twibot-22/data/README.md
+!Twibot-22/benchmark_results/
+!Twibot-22/README.md
+Twibot-22/tweet_*.json
+Twibot-22/edge.csv
+Twibot-22/label.csv
+Twibot-22/split.csv
+Twibot-22/hashtag.json
+Twibot-22/list.json
 
 # Ignore data files
 data/
