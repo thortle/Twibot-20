@@ -201,6 +201,72 @@ def main():
     except Exception as e:
         print(f"Error saving model: {e}")
 
+    # Plot training curves
+    print("\nPlotting training curves...")
+    try:
+        train_loss = []
+        eval_loss = []
+        eval_accuracy = []
+        eval_f1 = []
+
+        for log in trainer.state.log_history:
+            if 'loss' in log and 'epoch' in log and 'step' in log: # Filter for training steps
+                # Check if it's a training log entry based on keys presence
+                is_training_log = all(k in log for k in ['loss', 'learning_rate', 'epoch', 'step'])
+                is_eval_log = 'eval_loss' in log
+
+                if is_training_log and not is_eval_log:
+                     # Estimate epoch fraction for smoother plotting if needed, or just use epoch
+                     epoch_progress = log.get('epoch', 0)
+                     train_loss.append((epoch_progress, log['loss']))
+
+            elif 'eval_loss' in log and 'epoch' in log: # Filter for evaluation steps
+                eval_loss.append((log['epoch'], log['eval_loss']))
+                eval_accuracy.append((log['epoch'], log['eval_accuracy']))
+                eval_f1.append((log['epoch'], log['eval_f1']))
+
+        # Sort by epoch
+        train_loss.sort(key=lambda x: x[0])
+        eval_loss.sort(key=lambda x: x[0])
+        eval_accuracy.sort(key=lambda x: x[0])
+        eval_f1.sort(key=lambda x: x[0])
+
+        # Create figure
+        # Ensure matplotlib is imported: import matplotlib.pyplot as plt
+        import matplotlib.pyplot as plt
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
+
+        # Plot loss
+        if train_loss:
+             ax1.plot([x[0] for x in train_loss], [x[1] for x in train_loss], 'b-', label='Training Loss', alpha=0.6)
+        if eval_loss:
+             ax1.plot([x[0] for x in eval_loss], [x[1] for x in eval_loss], 'r-o', label='Validation Loss')
+        ax1.set_xlabel('Epoch')
+        ax1.set_ylabel('Loss')
+        ax1.set_title('Training and Validation Loss')
+        ax1.legend()
+        ax1.grid(True)
+
+        # Plot metrics
+        if eval_accuracy:
+             ax2.plot([x[0] for x in eval_accuracy], [x[1] for x in eval_accuracy], 'g-o', label='Validation Accuracy')
+        if eval_f1:
+             ax2.plot([x[0] for x in eval_f1], [x[1] for x in eval_f1], 'm-o', label='Validation F1 Score')
+        ax2.set_xlabel('Epoch')
+        ax2.set_ylabel('Score')
+        ax2.set_title('Validation Metrics')
+        ax2.legend()
+        ax2.grid(True)
+
+        # Ensure output directory exists (should already exist from TrainingArguments)
+        plot_save_path = os.path.join(output_dir, "training_curves.png") # output_dir should be defined earlier in main()
+        plt.tight_layout()
+        plt.savefig(plot_save_path)
+        print(f"Training curves saved to {plot_save_path}")
+        plt.close(fig) # Close the plot to free memory
+    except Exception as plot_err:
+        print(f"Warning: Could not generate training plots. Error: {plot_err}")
+
     print("\nTraining and evaluation completed!")
     print(f"The fine-tuned model is saved at: {output_dir}")
     print("You can now use this model for inference on new data.")
