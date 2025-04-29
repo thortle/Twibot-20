@@ -33,9 +33,41 @@ Twibot-22/split.csv
 Twibot-22/hashtag.json
 Twibot-22/list.json
 
-# Ignore data files
-data/
-*/data/
+# Include data directory structure but exclude actual data files
+!data/
+!data/README.md
+!data/Twibot-20/
+!data/Twibot-20/README.md
+!data/twibot20_fixed_dataset/
+!data/twibot20_fixed_dataset/README.md
+!data/twibot20_fixed_tokenized/
+!data/twibot20_fixed_tokenized/README.md
+!data/twibot20_llama_tokenized/
+!data/twibot20_llama_tokenized/README.md
+!data/twibot20_fixed_parquet/
+!data/twibot20_fixed_parquet/README.md
+!data/twibot20_tokenized_parquet/
+!data/twibot20_tokenized_parquet/README.md
+# Ignore actual data files
+data/Twibot-20/*.json
+data/twibot20_fixed_dataset/*.arrow
+data/twibot20_fixed_dataset/*.idx
+data/twibot20_fixed_dataset/dataset_dict.json
+data/twibot20_fixed_dataset/dataset_info.json
+data/twibot20_fixed_tokenized/*.arrow
+data/twibot20_fixed_tokenized/*.idx
+data/twibot20_fixed_tokenized/dataset_dict.json
+data/twibot20_fixed_tokenized/dataset_info.json
+data/twibot20_llama_tokenized/*.arrow
+data/twibot20_llama_tokenized/*.idx
+data/twibot20_llama_tokenized/dataset_dict.json
+data/twibot20_llama_tokenized/dataset_info.json
+data/twibot20_fixed_parquet/*.parquet
+data/twibot20_fixed_parquet/dataset_info.json
+data/twibot20_fixed_parquet/state.json
+data/twibot20_tokenized_parquet/*.parquet
+data/twibot20_tokenized_parquet/dataset_info.json
+data/twibot20_tokenized_parquet/state.json
 
 # Ignore model files
 *.safetensors
