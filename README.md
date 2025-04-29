@@ -121,6 +121,12 @@ The project is organized into two main parts: Twibot-20 (main project) and Twibo
 │   ├── memory_comparison.png       # Memory usage charts
 │   └── parquet_performance.md      # Detailed benchmark report
 │
+├── llama_model/                    # Alternative model implementation using T5 (Llama substitute)
+│   ├── scripts/                    # Pipeline scripts for T5 model
+│   ├── utilities/                  # Helper modules for T5 model
+│   ├── models/                     # Trained T5 model files
+│   └── README.md                   # Documentation for T5 implementation
+│
 ├── Twibot-22/                      # Extension project directory (see Twibot-22/README.md for details)
 │
 └── README.md                       # Main project documentation
@@ -250,14 +256,21 @@ The pipeline generates processed and tokenized datasets, which can be stored in 
 - The fine-tuned DistilBERT model achieved a respectable F1-score of 77% and accuracy of 78% on the test set using only profile text and limited tweet data.
 - This indicates that the textual content available in user profiles (and a few recent tweets) contains significant signals that the model can learn to distinguish between human and bot accounts within the Twibot-20 dataset context.
 
-### 7.2. Limitations
+### 7.2. Alternative Model Comparison (T5 vs. DistilBERT)
+- As an alternative approach, we also implemented a T5 model (as a substitute for Llama) for the same task. The implementation is available in the `llama_model/` directory.
+- The T5 model achieved an accuracy of 72.44% and F1-score of 72.41%, which is approximately 5 percentage points lower than DistilBERT.
+- Despite being a larger model (220M parameters vs. 66M for DistilBERT), T5 performed worse on this specific task, suggesting that smaller, task-specific models can outperform larger, more general models for specialized classification tasks.
+- The T5 model also showed less decisive prediction behavior, with a tendency to classify most inputs as "Human" with moderate confidence (51-70%).
+- For detailed comparison metrics and analysis, see the `llama_model/README.md` file.
+
+### 7.3. Limitations
 - **Data Scope:** The primary limitation is the reliance on limited textual data. Performance could likely be improved by incorporating user metadata (account age, follower/following ratio), behavioral patterns (posting frequency, content type), or network information (connections to known bots/humans), which were not used here.
 - **Tweet Availability:** The `node_new.json` file did not consistently contain tweet data for all users, limiting the model's exposure to actual user-generated content beyond the profile.
 - **Sophisticated Bots:** The model might struggle against advanced bots designed to mimic human profiles closely or those with very sparse profiles.
 - **Generalization:** Performance on different Twitter datasets or newer bot types may vary. The Twibot-20 dataset has specific characteristics.
 - **Text Cleaning & Tokenization:** Basic cleaning was applied. More advanced NLP techniques (e.g., handling emojis, non-standard characters, language detection) were not implemented. Truncation affects a small percentage (<1%) of very long profiles/tweet combinations.
 
-### 7.3. Conclusion
+### 7.4. Conclusion
 - We successfully fine-tuned DistilBERT for Twitter bot detection using profile/tweet text from Twibot-20, achieving 78% accuracy.
 - The project demonstrates the viability of using Transformer models on limited text data for this task and establishes a solid baseline.
 - The integration of Apache Parquet provides significant storage savings (~5-15x) and offers flexibility for handling larger datasets or integration with other tools, although processing speed trade-offs exist compared to the native Hugging Face format for this specific dataset size.
