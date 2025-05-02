@@ -27,6 +27,7 @@
 !Twibot-22/data/README.md
 !Twibot-22/benchmark_results/
 !Twibot-22/README.md
+!Twibot-22/tests_and_bugs.md
 Twibot-22/tweet_*.json
 Twibot-22/edge.csv
 Twibot-22/label.csv
