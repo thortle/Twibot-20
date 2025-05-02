@@ -122,23 +122,35 @@ This document outlines the testing procedures and bugs encountered during the de
 
 ### 2.1. Data Processing Issues
 
-#### 2.1.1. Empty Text Fields
+#### 2.1.1. User ID Format Mismatch
+- **Issue**: User IDs in the label.csv file had a 'u' prefix (e.g., 'u1217628182611927040'), while the tweet data used the 'author_id' field without this prefix
+- **Impact**: This mismatch caused failures when trying to match users between different data sources, resulting in missing data or incorrect associations
+- **Resolution**: Implemented a normalization function to handle the prefix consistently across all data sources
+- **Prevention**: Added explicit validation of user IDs and documented the format differences in the code comments
+
+#### 2.1.2. Empty Text Fields
 - **Issue**: Some user profiles had empty or very short text fields
 - **Impact**: Models trained on such data would have poor performance due to lack of features
 - **Resolution**: Added text length statistics reporting to identify and handle empty text fields
 - **Prevention**: Implemented checks for text length and reported statistics on empty fields
 
-#### 2.1.2. ClassLabel Type Requirement
+#### 2.1.3. ClassLabel Type Requirement
 - **Issue**: When using `train_test_split` with `stratify_by_column`, the column must be a ClassLabel type, not a Value type
 - **Impact**: Stratification would fail if the label column was not properly typed
 - **Resolution**: Ensured that the label column was defined as a ClassLabel type with proper names
 - **Prevention**: Added explicit type checking and conversion for the label column
 
-#### 2.1.3. JSON Parsing Errors
+#### 2.1.4. JSON Parsing Errors
 - **Issue**: The Twibot-20 dataset JSON files were not in standard format and required special parsing
 - **Impact**: Standard JSON loading would fail or produce incorrect results
 - **Resolution**: Implemented custom JSON parsing logic to handle the specific format
 - **Prevention**: Added robust error handling and validation for JSON parsing
+
+#### 2.1.5. Tweet Data Structure Inconsistency
+- **Issue**: When extracting tweet data from the Twibot-20 dataset, the script failed to find tweets because the assumed structure (user_data['tweet'] as a list of dictionaries with 'text' keys) was incorrect
+- **Impact**: No tweet content was being extracted, resulting in models trained only on profile information
+- **Resolution**: Investigated the actual structure of the tweet data and updated the extraction logic to match
+- **Prevention**: Added data structure validation and more detailed error reporting
 
 ### 2.2. Tokenization Issues
 
@@ -154,29 +166,37 @@ This document outlines the testing procedures and bugs encountered during the de
 - **Resolution**: Implemented truncation with appropriate warnings
 - **Prevention**: Added reporting on the number of samples that required truncation
 
-### 2.3. Model Training Issues
+### 2.3. Memory and Resource Issues
 
-#### 2.3.1. Device Detection Errors
+#### 2.3.1. Excessive Memory Usage with Large Files
+- **Issue**: Processing large datasets (10GB+ files) caused excessive memory usage that led to system swapping
+- **Impact**: Scripts would run extremely slowly or crash on systems with limited RAM (even 32GB was insufficient for some operations)
+- **Resolution**: Optimized scripts to use more CPU power and less memory by processing files incrementally, implementing memory monitoring, reducing worker processes, adding strategic garbage collection, using 8MB buffer size for incremental parsing, and compressing intermediate files
+- **Prevention**: Added memory usage monitoring and warnings when approaching system limits
+
+### 2.4. Model Training Issues
+
+#### 2.4.1. Device Detection Errors
 - **Issue**: Incorrect device detection could lead to training failures
 - **Impact**: Training would fail or be unnecessarily slow on incompatible devices
 - **Resolution**: Implemented robust device detection logic for CPU, CUDA, and MPS (Apple Silicon)
 - **Prevention**: Added clear reporting of the detected device and fallback mechanisms
 
-#### 2.3.2. Memory Usage Spikes
+#### 2.4.2. Memory Usage Spikes
 - **Issue**: Training on large datasets could cause memory usage spikes
 - **Impact**: System could become unresponsive or crash due to excessive memory usage
 - **Resolution**: Implemented batch size controls and memory monitoring
 - **Prevention**: Added memory usage reporting and optimized batch sizes
 
-### 2.4. Parquet Conversion Issues
+### 2.5. Parquet Conversion Issues
 
-#### 2.4.1. Feature Type Preservation
+#### 2.5.1. Feature Type Preservation
 - **Issue**: Converting between formats could lose feature type information
 - **Impact**: Models would fail if feature types were incorrect
 - **Resolution**: Implemented explicit feature type preservation during conversion
 - **Prevention**: Added validation of feature types after conversion
 
-#### 2.4.2. Sequence Column Handling
+#### 2.5.2. Sequence Column Handling
 - **Issue**: Sequence columns (like `input_ids` and `attention_mask`) required special handling in Parquet
 - **Impact**: Tokenized datasets could fail to convert correctly
 - **Resolution**: Implemented special handling for sequence columns in Parquet conversion
