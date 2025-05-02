@@ -78,6 +78,15 @@ This document outlines the testing procedures and bugs encountered during the de
   - Check that the appropriate device is detected and used
 - **Expected Result**: Model should train successfully on the available hardware, with appropriate device detection
 
+#### 1.3.4. LLM vs SLM Comparison Test
+- **Purpose**: Compare the performance of Large Language Models (T5 as Llama substitute) versus Small Language Models (DistilBERT)
+- **Procedure**:
+  - Train both T5 (using the `llama_model/scripts/3_train_model.py`) and DistilBERT models on the same dataset
+  - Compare metrics (accuracy, precision, recall, F1-score) on the test set
+  - Analyze prediction behavior on sample texts
+  - Compare resource requirements (memory, training time)
+- **Expected Result**: Performance comparison showing trade-offs between model size, accuracy, and resource requirements
+
 ### 1.4. Prediction Tests
 
 #### 1.4.1. Model Loading for Inference Test
@@ -188,6 +197,12 @@ This document outlines the testing procedures and bugs encountered during the de
 - **Resolution**: Implemented batch size controls and memory monitoring
 - **Prevention**: Added memory usage reporting and optimized batch sizes
 
+#### 2.4.3. LLM Performance Limitations
+- **Issue**: The T5 model (used as a substitute for Llama) performed worse than DistilBERT despite being larger
+- **Impact**: The larger model (220M parameters vs 66M for DistilBERT) achieved lower accuracy (72.44% vs 78%) and F1-score (72.41% vs 77%)
+- **Resolution**: Documented the performance comparison and recommended DistilBERT as the preferred model
+- **Prevention**: Added detailed analysis of prediction behavior to understand why the larger model performed worse
+
 ### 2.5. Parquet Conversion Issues
 
 #### 2.5.1. Feature Type Preservation
@@ -243,3 +258,5 @@ This document outlines the testing procedures and bugs encountered during the de
 6. **Error Handling**: Comprehensive error handling and reporting helps identify and resolve issues quickly during the development process.
 
 7. **Performance Benchmarking**: Systematic benchmarking of different approaches provides valuable insights for optimization decisions.
+
+8. **Bigger Isn't Always Better**: Our comparison of T5 (220M parameters) vs DistilBERT (66M parameters) showed that the smaller model performed better for this specific task. This demonstrates that task-specific, well-tuned smaller models can outperform larger, more general models for specialized classification tasks.
