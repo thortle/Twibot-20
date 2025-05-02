@@ -4,6 +4,7 @@
 # But not these files...
 !.gitignore
 !README.md
+!tests_and_bugs.md
 !*.py
 
 # And not these directories...
