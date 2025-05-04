@@ -18,74 +18,72 @@
         - 1.5.2. Model architecture  
         - 1.5.3. Training process
 
-2. [Development outcomes](#2-development-outcomes)
-
-    2.1. [Results](#21-results)
-   
-    2.2. [Discussion and conclusion](#22-discussion--conclusion)  
-        - 2.2.1. Interpretation
-        - 2.2.2 Alternative model comparison (T5 vs. DistilBERT)
+2. [Development outcomes](#2-development-outcomes)  
+    2.1. [Results](#21-results)  
+    2.2. [Discussion and conclusion](#22-discussion-and-conclusion)  
+        - 2.2.1. Interpretation  
+        - 2.2.2. Alternative model comparison (T5 vs. DistilBERT)  
         - 2.2.3. Limitations  
-        - 2.2.4. Conclusion   
+        - 2.2.4. Conclusion  
 
-4. [Testing, bugs and performance optimizations](#3-testing-bugs-and-performance-optimizations)  
+3. [Testing, bugs and performance optimizations](#3-testing-bugs-and-performance-optimizations)  
     3.1. [Testing procedures](#31-testing-procedures)  
-        - 3.1.1. Data processing tests
-           3.1.1.1. Dataset loading test
-           3.1.1.2. Text extraction test
-           3.1.1.3. Dataset split test  
+        - 3.1.1. Data processing tests  
+            - 3.1.1.1. Dataset loading test  
+            - 3.1.1.2. Text extraction test  
+            - 3.1.1.3. Dataset split test  
         - 3.1.2. Tokenization tests  
-           3.1.2.1. Tokenizer loading test  
-           3.1.2.2. Tokenization quality test  
-           3.1.2.3. Format compatibility test  
+            - 3.1.2.1. Tokenizer loading test  
+            - 3.1.2.2. Tokenization quality test  
+            - 3.1.2.3. Format compatibility test  
         - 3.1.3. Model training tests  
-           3.1.3.1. Model loading test  
-           3.1.3.2. Training progress test  
-           3.1.3.3. Device compatibility test  
+            - 3.1.3.1. Model loading test  
+            - 3.1.3.2. Training progress test  
+            - 3.1.3.3. Device compatibility test  
         - 3.1.4. Prediction tests  
-           3.1.4.1. Model loading for inference test  
-           3.1.4.2. Prediction quality test  
+            - 3.1.4.1. Model loading for inference test  
+            - 3.1.4.2. Prediction quality test  
         - 3.1.5. Parquet performance tests  
-           3.1.5.1. Storage efficiency test  
-           3.1.5.2. Loading speed test  
-           3.1.5.3. Processing performance test  
+            - 3.1.5.1. Storage efficiency test  
+            - 3.1.5.2. Loading speed test  
+            - 3.1.5.3. Processing performance test  
 
     3.2. [Bugs and issues encountered](#32-bugs-and-issues-encountered)  
         - 3.2.1. Data processing issues  
-            3.2.1.1. User ID format mismatch  
-            3.2.1.2. Empty text fields  
-            3.2.1.3. ClassLabel type requirement  
-            3.2.1.4. JSON parsing errors  
-            3.2.1.5. Tweet data structure inconsistency  
+            - 3.2.1.1. User ID format mismatch  
+            - 3.2.1.2. Empty text fields  
+            - 3.2.1.3. ClassLabel type requirement  
+            - 3.2.1.4. JSON parsing errors  
+            - 3.2.1.5. Tweet data structure inconsistency  
         - 3.2.2. Tokenization issues  
-            3.2.2.1. Token length imbalance  
-            3.2.2.2. Truncation of long texts  
+            - 3.2.2.1. Token length imbalance  
+            - 3.2.2.2. Truncation of long texts  
         - 3.2.3. Memory and resource issues  
-            3.2.3.1. Excessive memory usage with large files  
+            - 3.2.3.1. Excessive memory usage with large files  
         - 3.2.4. Model training issues  
-            3.2.4.1. Device detection errors  
-            3.2.4.2. Memory usage spikes  
+            - 3.2.4.1. Device detection errors  
+            - 3.2.4.2. Memory usage spikes  
         - 3.2.5. Parquet conversion issues  
-            3.2.5.1. Feature type preservation  
-            3.2.5.2. Sequence column handling  
+            - 3.2.5.1. Feature type preservation  
+            - 3.2.5.2. Sequence column handling  
 
     3.3. [Performance optimizations](#33-performance-optimizations)  
         - 3.3.1. Memory efficiency improvements  
-            3.3.1.1. Incremental processing  
-            3.3.1.2. Garbage collection  
+            - 3.3.1.1. Incremental processing  
+            - 3.3.1.2. Garbage collection  
         - 3.3.2. Speed improvements  
-            3.3.2.1. Parquet format  
-            3.3.2.2. Batch processing  
+            - 3.3.2.1. Parquet format  
+            - 3.3.2.2. Batch processing  
 
     3.4. [Lessons learned](#34-lessons-learned)
 
-5. [Usage instructions](#4-usage-instructions)  
+4. [Usage instructions](#4-usage-instructions)  
     4.1. Prerequisites  
     4.2. Running the pipeline (default - HF format)  
     4.3. Running the pipeline (optional - Parquet format)  
     4.4. Optional scripts  
 
-6. [API and module documentation](#5-api-and-module-documentation)  
+5. [API and module documentation](#5-api-and-module-documentation)  
     5.1. `scripts/1_fix_dataset.py`  
     5.2. `scripts/2_tokenize_dataset.py`  
     5.3. `scripts/3_train_model.py`  
@@ -95,7 +93,7 @@
     5.7. `utilities/dataset_splitter.py`  
     5.8. `utilities/parquet_utils.py`  
 
-7. [Data processing workflow details](#6-data-processing-workflow-details)  
+6. [Data processing workflow details](#6-data-processing-workflow-details)  
     6.1. Raw data loading  
     6.2. Text extraction and cleaning  
     6.3. Dataset creation and formatting  
@@ -104,13 +102,14 @@
     6.6. Data format conversion (optional)  
     6.7. Data flow summary  
 
-8. [Parquet vs Hugging Face performance comparison](#7-parquet-vs-hugging-face-performance-comparison)  
+7. [Parquet vs Hugging Face performance comparison](#7-parquet-vs-hugging-face-performance-comparison)  
     7.1. Storage efficiency  
     7.2. Loading and processing performance  
     7.3. When to use each format  
     7.4. Conclusion  
 
-9. [Requirements](#6-requirements)
+8. [Requirements](#8-requirements)
+9. [Dataset attribution and citation](#9-dataset-attribution-and-citation)
 
 ---
 
@@ -315,7 +314,7 @@ The pipeline generates processed and tokenized datasets, which can be stored in 
   - Early stopping triggered after epoch 3, indicating no further improvement.
 - **Training curves:** Visualizations of training/validation loss and metrics over epochs can be found in `models/distilbert-bot-detector/training_curves.png`. *(Ensure this file is generated and saved there by `3_train_model.py` or move it)*
 
-### 2.2 Discussion & conclusion
+### 2.2 Discussion and conclusion
 
 #### 2.2.1 Interpretation
 - The fine-tuned DistilBERT model achieved a respectable F1-score of 77% and accuracy of 78% on the test set using only profile text and limited tweet data.
@@ -936,7 +935,7 @@ pip install -r requirements.txt
 
 For Apple Silicon users, ensure PyTorch with MPS support is installed.
 
-## 7. Dataset attribution and citation
+## 9. Dataset attribution and citation
 
 ### Twibot-20 and Twibot-22 Datasets
 
