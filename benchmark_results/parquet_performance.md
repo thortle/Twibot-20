@@ -16,7 +16,7 @@
 | Fixed Dataset | 0.006 ± 0.005 | 0.019 ± 0.001 | 0.32x |
 | Tokenized Dataset | 0.005 ± 0.001 | 0.033 ± 0.000 | 0.15x |
 
-![Loading Comparison](benchmark_results/loading_comparison.png)
+
 
 ## 3. Processing Performance
 
@@ -24,7 +24,7 @@
 |-----------|------------------------|-------------------|-------------------|
 | Filter, Map, Sort | 0.051 ± 0.069 | 0.135 ± 0.001 | 0.38x |
 
-![Processing Comparison](benchmark_results/processing_comparison.png)
+
 
 ## 4. Memory Usage
 
@@ -32,7 +32,7 @@
 |--------------|-------------------|--------------|------------------|
 | Fixed Dataset | 1.97 | 16.99 | 0.12x |
 
-![Memory Comparison](benchmark_results/memory_comparison.png)
+
 
 ## 5. Summary
 
