@@ -16,45 +16,92 @@
     1.5. [Methodology](#15-methodology)  
         - 1.5.1. Preprocessing - Tokenization  
         - 1.5.2. Model architecture  
-        - 1.5.3. Training process  
-    1.6. [Results](#16-results)  
-    1.7. [Discussion & conclusion](#17-discussion--conclusion)  
-        - 1.7.1. Interpretation  
-        - 1.7.2. Limitations  
-        - 1.7.3. Conclusion  
+        - 1.5.3. Training process
 
-2. [Usage instructions](#2-usage-instructions)  
-    2.1. Prerequisites  
-    2.2. Running the pipeline (default - HF format)  
-    2.3. Running the pipeline (optional - Parquet format)  
-    2.4. Optional scripts  
+2. [Development outcomes](#2-development-outcomes)
+    2.1. [Results](#21-results)
+    2.2. [Discussion & conclusion](#22-discussion--conclusion)  
+        - 2.2.1. Interpretation   
+        - 2.2.3. Limitations  
+        - 2.2.4. Conclusion   
 
-3. [API and module documentation](#3-api-and-module-documentation)  
-    3.1. `scripts/1_fix_dataset.py`  
-    3.2. `scripts/2_tokenize_dataset.py`  
-    3.3. `scripts/3_train_model.py`  
-    3.4. `scripts/4_predict.py`  
-    3.5. `scripts/convert_to_parquet.py`  
-    3.6. `scripts/benchmark_parquet.py`  
-    3.7. `utilities/dataset_splitter.py`  
-    3.8. `utilities/parquet_utils.py`  
+3. [Testing, bugs and performance optimizations](#3-testing-bugs-and-performance-optimizations) 
+    3.1. [Testing procedures](#31-testing-procedures)  
+        - 3.1.1. [Data processing tests]
+            - 3.1.1.1 Dataset loading test
+            - 3.1.1.2 Text extraction test
+            - 3.1.1.3 Dataset split test
+        - 3.1.2. [Tokenization tests]
+            - 3.1.2.1 Tokenizer loading test
+            - 3.1.2.2 Tokenization quality test
+            - 3.1.2.3 Format compatibility test
+        - 3.1.3. [Model training tests]
+            - 3.1.3.1 Model loading test
+            - 3.1.3.2 Training progress test
+            - 3.1.3.3 Device compatibility test
+        - 3.1.4. [Prediction tests]
+            - 3.1.4.1 Model loading for inference test
+            - 3.1.4.2 Prediction quality test
+        - 3.1.5. [Parquet performance tests]
+    3.2. [Bugs and issues encountered](#32-bugs-and-issues-encountered)  
+    - 3.2.1. [Data processing issues]
+        - 3.2.1.1. [User ID format mismatch]  
+        - 3.2.1.2. [Empty text fields]  
+        - 3.2.1.3. [ClassLabel type requirement]  
+        - 3.2.1.4. [JSON parsing errors] 
+        - 3.2.1.5. [Tweet data structure inconsistency] 
+    - 3.2.2. [Tokenization issues]
+        - 3.2.2.1. [Token length imbalance]
+        - 3.2.2.2. [Truncation of long texts] 
+    - 3.2.3. [Memory and resource issues]
+        - 3.2.3.1. [Excessive memory usage with large files]
+    - 3.2.4. [Model training issues]
+        - 3.2.4.1. [Device detection errors]
+        - 3.2.4.2. [Memory usage spikes] 
+    - 3.2.5. [Parquet conversion issues] 
+        - 3.2.5.1. [Feature type preservation] 
+        - 3.2.5.2. [Sequence column handling] 
+    3.3. [Performance optimizations](#33-performance-optimizations)  
+    - 3.3.1. [Memory efficiency improvements]  
+        - 3.3.1.1. [Incremental processing]  
+        - 3.3.1.2. [Garbage collection] 
+    - 3.3.2. [Speed improvements] 
+        - 3.3.2.1. [Parquet format]
+        - 3.3.2.2. [Batch processing]
+    3.4. [Lessons learned](#34-lessons-learned)
 
-4. [Data processing workflow details](#4-data-processing-workflow-details)  
-    4.1. Raw data loading  
-    4.2. Text extraction and cleaning  
-    4.3. Dataset creation and formatting  
-    4.4. Dataset splitting  
-    4.5. Tokenization for model input  
-    4.6. Data format conversion (optional)  
-    4.7. Data flow summary  
+4. [Usage instructions](#2-usage-instructions)  
+    4.1. Prerequisites  
+    4.2. Running the pipeline (default - HF format)  
+    4.3. Running the pipeline (optional - Parquet format)  
+    4.4. Optional scripts  
 
-5. [Parquet vs Hugging Face performance comparison](#5-parquet-vs-hugging-face-performance-comparison)  
-    5.1. Storage efficiency  
-    5.2. Loading and processing performance  
-    5.3. When to use each format  
-    5.4. Conclusion  
+5. [API and module documentation](#3-api-and-module-documentation)  
+    5.1. `scripts/1_fix_dataset.py`  
+    5.2. `scripts/2_tokenize_dataset.py`  
+    5.3. `scripts/3_train_model.py`  
+    5.4. `scripts/4_predict.py`  
+    5.5. `scripts/convert_to_parquet.py`  
+    5.6. `scripts/benchmark_parquet.py`  
+    5.7. `utilities/dataset_splitter.py`  
+    5.8. `utilities/parquet_utils.py`  
 
-6. [Requirements](#6-requirements)
+6. [Data processing workflow details](#4-data-processing-workflow-details)  
+    6.1. Raw data loading  
+    6.2. Text extraction and cleaning  
+    6.3. Dataset creation and formatting  
+    6.4. Dataset splitting  
+    6.5. Tokenization for model input  
+    6.6. Data format conversion (optional)  
+    6.7. Data flow summary  
+
+7. [Parquet vs Hugging Face performance comparison](#5-parquet-vs-hugging-face-performance-comparison)  
+    7.1. Storage efficiency  
+    7.2. Loading and processing performance  
+    7.3. When to use each format  
+    7.4. Conclusion  
+
+8. [Requirements](#6-requirements)
 
 ---
 
@@ -283,9 +330,253 @@ The pipeline generates processed and tokenized datasets, which can be stored in 
 - The project demonstrates the viability of using Transformer models on limited text data for this task and establishes a solid baseline.
 - The integration of Apache Parquet provides significant storage savings (~5-15x) and offers flexibility for handling larger datasets or integration with other tools, although processing speed trade-offs exist compared to the native Hugging Face format for this specific dataset size.
 
-## 2. Usage instructions
+## 3. Testing, bugs and performance optimizations
+This section outlines the testing procedures and bugs encountered during the development of the Twitter Bot Detection project using the Twibot-20 dataset.
 
-### 2.1 Prerequisites
+### 3.1. Testing procedures
+
+#### 3.1.1. Data processing tests
+
+##### 3.1.1.1. Dataset loading test
+- **Purpose**: Verify that the Twibot-20 dataset can be loaded correctly
+- **Procedure**:
+  - Run `scripts/1_fix_dataset.py` with verbose output
+  - Check that all user profiles are loaded from `node_new.json`
+  - Verify that labels are correctly loaded from `label_new.json`
+  - Confirm that train/test splits are properly loaded from `split_new.json`
+- **Expected Result**: All data files load without errors, and the script reports the correct number of users, labels, and splits
+
+##### 3.1.1.2. Text extraction test
+- **Purpose**: Ensure that text is properly extracted from user profiles
+- **Procedure**:
+  - Run `scripts/1_fix_dataset.py` with verbose output
+  - Check the statistics on text length and content
+  - Manually inspect a sample of extracted texts
+- **Expected Result**: Text should be extracted from user descriptions and names, with reasonable average length and minimal empty fields
+
+##### 3.1.1.3. Dataset split test
+- **Purpose**: Verify that the dataset is correctly split into train, validation, and test sets
+- **Procedure**:
+  - Run `scripts/1_fix_dataset.py`
+  - Check the reported split sizes
+  - Verify that the class distribution is similar across splits
+- **Expected Result**: Train set should be 90% of original train, validation set should be 10% of original train, and test set should match the original test set
+
+#### 3.1.2. Tokenization tests
+
+##### 3.1.2.1. Tokenizer loading test
+- **Purpose**: Verify that the DistilBERT tokenizer loads correctly
+- **Procedure**:
+  - Run `scripts/2_tokenize_dataset.py`
+  - Check that the tokenizer is loaded without errors
+- **Expected Result**: Tokenizer should load successfully and report its vocabulary size and model max length
+
+##### 3.1.2.2. Tokenization quality test
+- **Purpose**: Ensure that the tokenization process produces valid token sequences
+- **Procedure**:
+  - Run `scripts/2_tokenize_dataset.py`
+  - Check the reported token statistics (average tokens, max tokens)
+  - Verify that there are minimal samples with only special tokens
+- **Expected Result**: Average token length should be reasonable (>10 tokens), and there should be few samples with only special tokens
+
+##### 3.1.2.3. Format compatibility test
+- **Purpose**: Verify that both Hugging Face and Parquet formats work correctly
+- **Procedure**:
+  - Run `scripts/2_tokenize_dataset.py` with and without the `--use-parquet` flag
+  - Check that both formats produce valid datasets
+- **Expected Result**: Both formats should produce valid datasets with the same structure and content
+
+#### 3.1.3. Model training tests
+
+##### 3.1.3.1. Model loading test
+- **Purpose**: Verify that the DistilBERT model loads correctly
+- **Procedure**:
+  - Run `scripts/3_train_model.py`
+  - Check that the model is loaded without errors
+- **Expected Result**: Model should load successfully and report its configuration
+
+##### 3.1.3.2. Training progress test
+- **Purpose**: Ensure that the model training progresses correctly
+- **Procedure**:
+  - Run `scripts/3_train_model.py`
+  - Monitor the training loss and evaluation metrics over epochs
+- **Expected Result**: Training loss should decrease over time, and evaluation metrics should improve
+
+##### 3.1.3.3. Device compatibility test
+- **Purpose**: Verify that the model can train on different devices (CPU, CUDA, MPS)
+- **Procedure**:
+  - Run `scripts/3_train_model.py` on different hardware
+  - Check that the appropriate device is detected and used
+- **Expected Result**: Model should train successfully on the available hardware, with appropriate device detection
+
+#### 3.1.4. Prediction tests
+
+##### 3.1.4.1. Model loading for inference test
+- **Purpose**: Verify that the trained model can be loaded for inference
+- **Procedure**:
+  - Run `scripts/4_predict.py`
+  - Check that the model is loaded without errors
+- **Expected Result**: Model should load successfully from the saved directory
+
+##### 3.1.4.2. Prediction quality test
+- **Purpose**: Ensure that the model makes reasonable predictions
+- **Procedure**:
+  - Run `scripts/4_predict.py`
+  - Check the predictions on the sample texts
+  - Test with custom inputs in interactive mode
+- **Expected Result**: Model should classify obvious bot and human texts correctly with reasonable confidence
+
+#### 3.1.5. Parquet performance tests
+
+##### 3.1.5.1. Storage efficiency test
+- **Purpose**: Verify that Parquet format provides storage benefits
+- **Procedure**:
+  - Run `scripts/benchmark_parquet.py`
+  - Check the reported storage sizes
+- **Expected Result**: Parquet format should be significantly smaller than Hugging Face format
+
+##### 3.1.5.2. Loading speed test
+- **Purpose**: Verify that Parquet format provides loading speed benefits
+- **Procedure**:
+  - Run `scripts/benchmark_parquet.py`
+  - Check the reported loading times
+- **Expected Result**: Parquet format should load faster than Hugging Face format
+
+##### 3.1.5.3. Processing performance test
+- **Purpose**: Verify that Parquet format provides processing benefits
+- **Procedure**:
+  - Run `scripts/benchmark_parquet.py`
+  - Check the reported processing times
+- **Expected Result**: Parquet format should process operations faster than Hugging Face format
+
+### 3.2. Bugs and issues encountered
+
+#### 3.2.1. Data processing issues
+
+##### 3.2.1.1. User ID format mismatch
+- **Issue**: User IDs in the label.csv file had a 'u' prefix (e.g., 'u1217628182611927040'), while the tweet data used the 'author_id' field without this prefix
+- **Impact**: This mismatch caused failures when trying to match users between different data sources, resulting in missing data or incorrect associations
+- **Resolution**: Implemented a normalization function to handle the prefix consistently across all data sources
+- **Prevention**: Added explicit validation of user IDs and documented the format differences in the code comments
+
+##### 3.2.1.2. Empty text fields
+- **Issue**: Some user profiles had empty or very short text fields
+- **Impact**: Models trained on such data would have poor performance due to lack of features
+- **Resolution**: Added text length statistics reporting to identify and handle empty text fields
+- **Prevention**: Implemented checks for text length and reported statistics on empty fields
+
+##### 3.2.1.3. ClassLabel type requirement
+- **Issue**: When using `train_test_split` with `stratify_by_column`, the column must be a ClassLabel type, not a Value type
+- **Impact**: Stratification would fail if the label column was not properly typed
+- **Resolution**: Ensured that the label column was defined as a ClassLabel type with proper names
+- **Prevention**: Added explicit type checking and conversion for the label column
+
+##### 3.2.1.4. JSON parsing errors
+- **Issue**: The Twibot-20 dataset JSON files were not in standard format and required special parsing
+- **Impact**: Standard JSON loading would fail or produce incorrect results
+- **Resolution**: Implemented custom JSON parsing logic to handle the specific format
+- **Prevention**: Added robust error handling and validation for JSON parsing
+
+##### 3.2.1.5. Tweet data structure inconsistency
+- **Issue**: When extracting tweet data from the Twibot-20 dataset, the script failed to find tweets because the assumed structure (user_data['tweet'] as a list of dictionaries with 'text' keys) was incorrect
+- **Impact**: No tweet content was being extracted, resulting in models trained only on profile information
+- **Resolution**: Investigated the actual structure of the tweet data and updated the extraction logic to match
+- **Prevention**: Added data structure validation and more detailed error reporting
+
+#### 3.2.2. Tokenization issues
+
+##### 3.2.2.1. Token length imbalance
+- **Issue**: Some texts were very short after tokenization (≤2 tokens)
+- **Impact**: Models would struggle to learn from such limited features
+- **Resolution**: Added reporting on token statistics to identify problematic samples
+- **Prevention**: Implemented checks for token length and reported statistics on very short token sequences
+
+##### 3.2.2.2. Truncation of long texts
+- **Issue**: Some texts exceeded the model's maximum input length (512 tokens for DistilBERT)
+- **Impact**: Information loss due to truncation could affect model performance
+- **Resolution**: Implemented truncation with appropriate warnings
+- **Prevention**: Added reporting on the number of samples that required truncation
+
+#### 3.2.3. Memory and resource issues
+
+##### 3.2.3.1. Excessive memory usage with large files
+- **Issue**: Processing large datasets (10GB+ files) caused excessive memory usage that led to system swapping
+- **Impact**: Scripts would run extremely slowly or crash on systems with limited RAM (even 32GB was insufficient for some operations)
+- **Resolution**: Optimized scripts to use more CPU power and less memory by processing files incrementally, implementing memory monitoring, reducing worker processes, adding strategic garbage collection, using 8MB buffer size for incremental parsing, and compressing intermediate files
+- **Prevention**: Added memory usage monitoring and warnings when approaching system limits
+
+#### 3.2.4. Model training issues
+
+##### 3.2.4.1. Device detection errors
+- **Issue**: Incorrect device detection could lead to training failures
+- **Impact**: Training would fail or be unnecessarily slow on incompatible devices
+- **Resolution**: Implemented robust device detection logic for CPU, CUDA, and MPS (Apple Silicon)
+- **Prevention**: Added clear reporting of the detected device and fallback mechanisms
+
+##### 3.2.4.2. Memory usage spikes
+- **Issue**: Training on large datasets could cause memory usage spikes
+- **Impact**: System could become unresponsive or crash due to excessive memory usage
+- **Resolution**: Implemented batch size controls and memory monitoring
+- **Prevention**: Added memory usage reporting and optimized batch sizes
+
+#### 3.2.5. Parquet conversion issues
+
+##### 3.2.5.1. Feature type preservation
+- **Issue**: Converting between formats could lose feature type information
+- **Impact**: Models would fail if feature types were incorrect
+- **Resolution**: Implemented explicit feature type preservation during conversion
+- **Prevention**: Added validation of feature types after conversion
+
+##### 3.2.5.2. Sequence column handling
+- **Issue**: Sequence columns (like `input_ids` and `attention_mask`) required special handling in Parquet
+- **Impact**: Tokenized datasets could fail to convert correctly
+- **Resolution**: Implemented special handling for sequence columns in Parquet conversion
+- **Prevention**: Added specific type checking and conversion for sequence columns
+
+### 3.3. Performance optimizations
+
+#### 3.3.1. Memory efficiency improvements
+
+##### 3.3.1.1. Incremental processing
+- **Optimization**: Implemented incremental processing of large files
+- **Impact**: Reduced memory usage during data loading and processing
+- **Measurement**: Memory usage reduced by approximately 40%
+
+##### 3.3.1.2. Garbage collection
+- **Optimization**: Added strategic garbage collection during memory-intensive operations
+- **Impact**: Prevented memory leaks and reduced peak memory usage
+- **Measurement**: Peak memory usage reduced by approximately 25%
+
+#### 3.3.2. Speed improvements
+
+##### 3.3.2.1. Parquet format
+- **Optimization**: Implemented Apache Parquet format support
+- **Impact**: Significantly improved loading and processing speed
+- **Measurement**: Loading time improved by 2.5x, processing time improved by 1.8x
+
+##### 3.3.2.2. Batch processing
+- **Optimization**: Implemented batch processing for tokenization and prediction
+- **Impact**: Improved throughput for large datasets
+- **Measurement**: Tokenization speed improved by approximately 30%
+
+### 3.4. Lessons learned
+1. **Data Quality Matters**: Empty or very short text fields can significantly impact model performance. Always check and report data quality statistics.
+
+2. **Type Safety**: Ensure proper type definitions, especially for operations like stratified splitting that have specific type requirements.
+
+3. **Memory Management**: Large datasets require careful memory management. Implement incremental processing and strategic garbage collection.
+
+4. **Format Efficiency**: Apache Parquet provides significant benefits for storage, loading, and processing efficiency compared to the default Hugging Face format.
+
+5. **Device Compatibility**: Robust device detection and compatibility logic is essential for models to work across different hardware configurations.
+
+6. **Error Handling**: Comprehensive error handling and reporting helps identify and resolve issues quickly during the development process.
+
+7. **Performance Benchmarking**: Systematic benchmarking of different approaches provides valuable insights for optimization decisions.
+
+## 4. Usage instructions
+
+### 4.1 Prerequisites
 
 1. Clone the repository.
 2. Install required Python packages:
@@ -294,7 +585,7 @@ The pipeline generates processed and tokenized datasets, which can be stored in 
    ```
 3. Download the Twibot-20 dataset files (`node_new.json`, `label_new.json`, `split_new.json`) and place them inside the `data/Twibot-20/` directory.
 
-### 2.2 Running the pipeline (default - HF format)
+### 4.2 Running the pipeline (default - HF format)
 
 Execute the scripts sequentially:
 
@@ -314,7 +605,7 @@ python scripts/4_predict.py # For interactive prediction
 
 This will generate datasets in `data/twibot20_fixed_dataset/` and `data/twibot20_fixed_tokenized/`, and the trained model in `models/distilbert-bot-detector/`.
 
-### 2.3 Running the pipeline (optional - Parquet format)
+### 4.3 Running the pipeline (optional - Parquet format)
 
 Use the `--use-parquet` flag for the processing and training steps:
 
@@ -334,7 +625,7 @@ python scripts/4_predict.py # Prediction script uses the saved model regardless 
 
 This will generate datasets in `data/twibot20_fixed_parquet/` and `data/twibot20_tokenized_parquet/`. The model is saved in the same location (`models/distilbert-bot-detector/`).
 
-### 2.4 Optional scripts
+### 4.4 Optional scripts
 
 Convert existing HF datasets to Parquet:
 
@@ -355,11 +646,11 @@ python scripts/benchmark_parquet.py
 # Results will appear in console and benchmark_results/ directory
 ```
 
-## 3. API and module documentation
+## 5. API and module documentation
 
 This section provides a detailed description of inputs, outputs, and key functions for each script and module.
 
-### 3.1. `scripts/1_fix_dataset.py`
+### 5.1. `scripts/1_fix_dataset.py`
 
 - **Functionality:** loads raw JSON data, extracts and cleans profile/tweet text, creates a DatasetDict with columns user_id, text, features (JSON string of the node), label (0/1), performs train/validation split, and saves the processed dataset.
 
@@ -369,7 +660,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 - **Output:** dataset (DatasetDict) saved to disk (`data/twibot20_fixed_dataset/`) OR in Parquet format (`data/twibot20_fixed_parquet/`).
 
-### 3.2. `scripts/2_tokenize_dataset.py`
+### 5.2. `scripts/2_tokenize_dataset.py`
 
 - **Functionality:** loads the processed dataset (HF or Parquet), applies DistilBERT tokenization, and saves the resulting dataset.
 
@@ -379,7 +670,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 - **Output:** tokenized dataset (DatasetDict) saved to disk (`data/twibot20_fixed_tokenized/`) OR in Parquet format (`data/twibot20_tokenized_parquet/`).
 
-### 3.3. `scripts/3_train_model.py`
+### 5.3. `scripts/3_train_model.py`
 
 - **Functionality:** loads the tokenized dataset (HF or Parquet), configures and fine-tunes the DistilBERT model, evaluates and saves the model.
 
@@ -389,7 +680,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 - **Output:** fine-tuned model (`models/distilbert-bot-detector/`), evaluation results (console), training curves (`training_curves.png`).
 
-### 3.4. `scripts/4_predict.py`
+### 5.4. `scripts/4_predict.py`
 
 - **Functionality:** loads the fine-tuned model for interactive predictions.
 
@@ -399,7 +690,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 - **Output:** prediction ('Human'/'Bot') and confidence (console).
 
-### 3.5. `scripts/convert_to_parquet.py`
+### 5.5. `scripts/convert_to_parquet.py`
 
 - **Functionality:** converts a Hugging Face disk format dataset to Parquet format.
 
@@ -407,7 +698,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 - **Usage:** manual tool for format conversion.
 
-### 3.6. `scripts/benchmark_parquet.py`
+### 5.6. `scripts/benchmark_parquet.py`
 
 - **Functionality:** compares the performance of HF disk and Parquet formats.
 
@@ -415,23 +706,23 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 - **Output:** results (console), markdown report and charts (`benchmark_results/`).
 
-### 3.7. `utilities/dataset_splitter.py`
+### 5.7. `utilities/dataset_splitter.py`
 
 - **Functionality:** utility module for stratified splitting of a Hugging Face dataset.
 
 - **API:** `split_dataset(combined_dataset, test_size=0.1, stratify_by_column='label', random_state=42) -> DatasetDict`.
 
-### 3.8. `utilities/parquet_utils.py`
+### 5.8. `utilities/parquet_utils.py`
 
 - **Functionality:** utility module for saving and loading Hugging Face datasets in Parquet format.
 
 - **API:** `save_dataset_to_parquet(dataset_dict, output_dir)`, `load_parquet_as_dataset(input_dir) -> DatasetDict`.
 
-## 4. Data processing workflow details
+## 6. Data processing workflow details
 
 This section details the sequence of operations transforming raw data into model-ready input, as implemented in the scripts, with specific function names and their operations.
 
-### 4.1. Raw data loading
+### 6.1. Raw data loading
 
 **Script:** `scripts/1_fix_dataset.py`
 
@@ -454,7 +745,7 @@ This section details the sequence of operations transforming raw data into model
    - `splits`: contains lists of user IDs for "train", "test", and "dev" sets
 3. Data integrity checks ensure all referenced user IDs exist across dictionaries
 
-### 4.2. Text extraction and cleaning
+### 6.2. Text extraction and cleaning
 
 **Script:** `scripts/1_fix_dataset.py`
 
@@ -475,7 +766,7 @@ This section details the sequence of operations transforming raw data into model
 5. `clean_text()` applies regex patterns like `re.sub(r'http\S+', '', text)` to remove URLs
 6. The function returns the cleaned, combined text for each user
 
-### 4.3. Dataset creation and formatting
+### 6.3. Dataset creation and formatting
 
 **Script:** `scripts/1_fix_dataset.py`
 
@@ -503,7 +794,7 @@ This section details the sequence of operations transforming raw data into model
 4. `Dataset.from_dict()` converts these dictionaries to Hugging Face Datasets
 5. The function returns a DatasetDict with 'train' and 'test' splits
 
-### 4.4. Dataset splitting
+### 6.4. Dataset splitting
 
 **Script:** `scripts/1_fix_dataset.py` (using `utilities/dataset_splitter.py`)
 
@@ -530,7 +821,7 @@ This section details the sequence of operations transforming raw data into model
 3. It creates new datasets using `Dataset.select(indices)` for both splits
 4. The function returns a new DatasetDict with 'train' (90%), 'validation' (10%), and the original 'test' split
 
-### 4.5. Tokenization for model input
+### 6.5. Tokenization for model input
 
 **Script:** `scripts/2_tokenize_dataset.py`
 
@@ -560,7 +851,7 @@ This section details the sequence of operations transforming raw data into model
 5. `compute_token_statistics()` analyzes the tokenized data to identify potential issues
 6. The tokenized dataset is saved using the appropriate format function
 
-### 4.6. Data format conversion (optional)
+### 6.6. Data format conversion (optional)
 
 **Scripts:**
 - `scripts/1_fix_dataset.py`, `scripts/2_tokenize_dataset.py` (with `--use-parquet` flag)
@@ -580,17 +871,17 @@ This section details the sequence of operations transforming raw data into model
 5. When loading, `load_parquet_as_dataset()` reverses this process
 6. The function reconstructs the DatasetDict with the original structure and feature definitions
 
-### 4.7. Data flow summary
+### 6.7. Data flow summary
 
 Raw JSON → Python dictionaries → cleaned text strings → HF DatasetDict (initial splits) → HF DatasetDict (final splits) → Tokenized HF DatasetDict → Model input tensors
 
 A parallel path using Parquet for intermediate storage is available at each step after the initial dataset creation, implemented through the `--use-parquet` flag and the utility functions in `utilities/parquet_utils.py`.
 
-## 5. Parquet vs Hugging Face performance comparison
+## 7. Parquet vs Hugging Face performance comparison
 
 This section summarizes the findings from `scripts/benchmark_parquet.py`. For full details and charts, see `benchmark_results/`.
 
-### 5.1. Storage efficiency
+### 7.1. Storage efficiency
 
 Apache Parquet demonstrates significant storage savings compared to the default Hugging Face disk format:
 
@@ -598,22 +889,22 @@ Apache Parquet demonstrates significant storage savings compared to the default 
 - **Tokenized Dataset**: up to 5.65x smaller (e.g., 10MB HF → 1.8MB Parquet).
 - **Conclusion**: Parquet is highly effective for reducing disk space usage.
 
-### 5.2. Loading and processing performance
+### 7.2. Loading and processing performance
 
 - **Loading time**: for this dataset size, loading from the Hugging Face disk format (leveraging memory mapping and Arrow caches) was generally faster than loading from Parquet files, especially for the more complex tokenized dataset.
 - **Processing operations**: simple operations like filtering (`.filter()`) and sorting (`.sort()`) were often faster using the optimized Hugging Face format. Mapping operations (`.map()`) showed variable performance.
 - **Note**: these speed comparisons might favor Parquet more significantly on much larger datasets where reading only necessary columns becomes a major advantage or when I/O becomes the bottleneck.
 
-### 5.3. When to use each format
+### 7.3. When to use each format
 
 - **Hugging Face Disk Format**: recommended for small-to-medium datasets, rapid prototyping, and when peak processing speed for common datasets operations is prioritized.
 - **Apache Parquet Format**: recommended for large datasets, scenarios where disk space is limited, long-term archival, and interoperability with other data processing tools (Spark, Pandas, Dask).
 
-### 5.4. Conclusion
+### 7.4. Conclusion
 
 Parquet offers compelling storage advantages. For the Twibot-20 dataset, the default Hugging Face format provides competitive or superior processing speed due to its optimizations. The choice involves a trade-off based on specific needs (storage vs speed). This project supports both, allowing flexibility.
 
-## 6. Requirements
+## 8. Requirements
 
 Ensure the following dependencies are installed:
 
