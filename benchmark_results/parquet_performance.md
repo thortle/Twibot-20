@@ -7,7 +7,7 @@
 | Fixed Dataset | 15.95 | 1.09 | 14.59x |
 | Tokenized Dataset | 10.31 | 1.83 | 5.65x |
 
-![Storage Comparison](benchmark_results/storage_comparison.png)
+
 
 ## 2. Loading Time
 
