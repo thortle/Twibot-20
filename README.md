@@ -19,6 +19,7 @@
         - 1.5.3. Training process
 
 2. [Development outcomes](#2-development-outcomes)
+
     2.1. [Results](#21-results)
    
     2.2. [Discussion & conclusion](#22-discussion--conclusion)  
