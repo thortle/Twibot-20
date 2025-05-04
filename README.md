@@ -20,54 +20,61 @@
 
 2. [Development outcomes](#2-development-outcomes)
     2.1. [Results](#21-results)
+   
     2.2. [Discussion & conclusion](#22-discussion--conclusion)  
         - 2.2.1. Interpretation   
         - 2.2.3. Limitations  
         - 2.2.4. Conclusion   
 
-3. [Testing, bugs and performance optimizations](#3-testing-bugs-and-performance-optimizations)
-   3.1. [Testing procedures](#31-testing-procedures)  
-        - 3.1.1. [Data processing tests]
-            - 3.1.1.1 Dataset loading test
-            - 3.1.1.2 Text extraction test
-            - 3.1.1.3 Dataset split test
-        - 3.1.2. [Tokenization tests]
-            - 3.1.2.1 Tokenizer loading test
-            - 3.1.2.2 Tokenization quality test
-            - 3.1.2.3 Format compatibility test
-        - 3.1.3. [Model training tests]
-            - 3.1.3.1 Model loading test
-            - 3.1.3.2 Training progress test
-            - 3.1.3.3 Device compatibility test
-        - 3.1.4. [Prediction tests]
-            - 3.1.4.1 Model loading for inference test
-            - 3.1.4.2 Prediction quality test
-        - 3.1.5. [Parquet performance tests]
+4. [Testing, bugs and performance optimizations](#3-testing-bugs-and-performance-optimizations)  
+    3.1. [Testing procedures](#31-testing-procedures)  
+        - 3.1.1. Data processing tests  
+            - 3.1.1.1. Dataset loading test  
+            - 3.1.1.2. Text extraction test  
+            - 3.1.1.3. Dataset split test  
+        - 3.1.2. Tokenization tests  
+            - 3.1.2.1. Tokenizer loading test  
+            - 3.1.2.2. Tokenization quality test  
+            - 3.1.2.3. Format compatibility test  
+        - 3.1.3. Model training tests  
+            - 3.1.3.1. Model loading test  
+            - 3.1.3.2. Training progress test  
+            - 3.1.3.3. Device compatibility test  
+        - 3.1.4. Prediction tests  
+            - 3.1.4.1. Model loading for inference test  
+            - 3.1.4.2. Prediction quality test  
+        - 3.1.5. Parquet performance tests  
+            - 3.1.5.1. Storage efficiency test  
+            - 3.1.5.2. Loading speed test  
+            - 3.1.5.3. Processing performance test  
+
     3.2. [Bugs and issues encountered](#32-bugs-and-issues-encountered)  
-    - 3.2.1. [Data processing issues]
-        - 3.2.1.1. [User ID format mismatch]  
-        - 3.2.1.2. [Empty text fields]  
-        - 3.2.1.3. [ClassLabel type requirement]  
-        - 3.2.1.4. [JSON parsing errors] 
-        - 3.2.1.5. [Tweet data structure inconsistency] 
-    - 3.2.2. [Tokenization issues]
-        - 3.2.2.1. [Token length imbalance]
-        - 3.2.2.2. [Truncation of long texts] 
-    - 3.2.3. [Memory and resource issues]
-        - 3.2.3.1. [Excessive memory usage with large files]
-    - 3.2.4. [Model training issues]
-        - 3.2.4.1. [Device detection errors]
-        - 3.2.4.2. [Memory usage spikes] 
-    - 3.2.5. [Parquet conversion issues] 
-        - 3.2.5.1. [Feature type preservation] 
-        - 3.2.5.2. [Sequence column handling] 
+        - 3.2.1. Data processing issues  
+            - 3.2.1.1. User ID format mismatch  
+            - 3.2.1.2. Empty text fields  
+            - 3.2.1.3. ClassLabel type requirement  
+            - 3.2.1.4. JSON parsing errors  
+            - 3.2.1.5. Tweet data structure inconsistency  
+        - 3.2.2. Tokenization issues  
+            - 3.2.2.1. Token length imbalance  
+            - 3.2.2.2. Truncation of long texts  
+        - 3.2.3. Memory and resource issues  
+            - 3.2.3.1. Excessive memory usage with large files  
+        - 3.2.4. Model training issues  
+            - 3.2.4.1. Device detection errors  
+            - 3.2.4.2. Memory usage spikes  
+        - 3.2.5. Parquet conversion issues  
+            - 3.2.5.1. Feature type preservation  
+            - 3.2.5.2. Sequence column handling  
+
     3.3. [Performance optimizations](#33-performance-optimizations)  
-    - 3.3.1. [Memory efficiency improvements]  
-        - 3.3.1.1. [Incremental processing]  
-        - 3.3.1.2. [Garbage collection] 
-    - 3.3.2. [Speed improvements] 
-        - 3.3.2.1. [Parquet format]
-        - 3.3.2.2. [Batch processing]
+        - 3.3.1. Memory efficiency improvements  
+            - 3.3.1.1. Incremental processing  
+            - 3.3.1.2. Garbage collection  
+        - 3.3.2. Speed improvements  
+            - 3.3.2.1. Parquet format  
+            - 3.3.2.2. Batch processing  
+
     3.4. [Lessons learned](#34-lessons-learned)
 
 5. [Usage instructions](#2-usage-instructions)  
