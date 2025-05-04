@@ -25,8 +25,8 @@
         - 2.2.3. Limitations  
         - 2.2.4. Conclusion   
 
-3. [Testing, bugs and performance optimizations](#3-testing-bugs-and-performance-optimizations) 
-    3.1. [Testing procedures](#31-testing-procedures)  
+3. [Testing, bugs and performance optimizations](#3-testing-bugs-and-performance-optimizations)
+   3.1. [Testing procedures](#31-testing-procedures)  
         - 3.1.1. [Data processing tests]
             - 3.1.1.1 Dataset loading test
             - 3.1.1.2 Text extraction test
@@ -70,13 +70,13 @@
         - 3.3.2.2. [Batch processing]
     3.4. [Lessons learned](#34-lessons-learned)
 
-4. [Usage instructions](#2-usage-instructions)  
+5. [Usage instructions](#2-usage-instructions)  
     4.1. Prerequisites  
     4.2. Running the pipeline (default - HF format)  
     4.3. Running the pipeline (optional - Parquet format)  
     4.4. Optional scripts  
 
-5. [API and module documentation](#3-api-and-module-documentation)  
+6. [API and module documentation](#3-api-and-module-documentation)  
     5.1. `scripts/1_fix_dataset.py`  
     5.2. `scripts/2_tokenize_dataset.py`  
     5.3. `scripts/3_train_model.py`  
@@ -86,7 +86,7 @@
     5.7. `utilities/dataset_splitter.py`  
     5.8. `utilities/parquet_utils.py`  
 
-6. [Data processing workflow details](#4-data-processing-workflow-details)  
+7. [Data processing workflow details](#4-data-processing-workflow-details)  
     6.1. Raw data loading  
     6.2. Text extraction and cleaning  
     6.3. Dataset creation and formatting  
@@ -95,13 +95,13 @@
     6.6. Data format conversion (optional)  
     6.7. Data flow summary  
 
-7. [Parquet vs Hugging Face performance comparison](#5-parquet-vs-hugging-face-performance-comparison)  
+8. [Parquet vs Hugging Face performance comparison](#5-parquet-vs-hugging-face-performance-comparison)  
     7.1. Storage efficiency  
     7.2. Loading and processing performance  
     7.3. When to use each format  
     7.4. Conclusion  
 
-8. [Requirements](#6-requirements)
+9. [Requirements](#6-requirements)
 
 ---
 
