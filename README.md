@@ -22,17 +22,18 @@
 
     2.1. [Results](#21-results)
    
-    2.2. [Discussion & conclusion](#22-discussion--conclusion)  
-        - 2.2.1. Interpretation   
+    2.2. [Discussion and conclusion](#22-discussion--conclusion)  
+        - 2.2.1. Interpretation
+        - 2.2.2 Alternative model comparison (T5 vs. DistilBERT)
         - 2.2.3. Limitations  
         - 2.2.4. Conclusion   
 
 4. [Testing, bugs and performance optimizations](#3-testing-bugs-and-performance-optimizations)  
     3.1. [Testing procedures](#31-testing-procedures)  
-        - 3.1.1. Data processing tests  
-            - 3.1.1.1. Dataset loading test  
-            - 3.1.1.2. Text extraction test  
-            - 3.1.1.3. Dataset split test  
+        - 3.1.1. Data processing tests
+           - 3.1.1.1. Dataset loading test
+           - 3.1.1.2. Text extraction test
+           - 3.1.1.3. Dataset split test  
         - 3.1.2. Tokenization tests  
             - 3.1.2.1. Tokenizer loading test  
             - 3.1.2.2. Tokenization quality test  
@@ -78,13 +79,13 @@
 
     3.4. [Lessons learned](#34-lessons-learned)
 
-5. [Usage instructions](#2-usage-instructions)  
+5. [Usage instructions](#4-usage-instructions)  
     4.1. Prerequisites  
     4.2. Running the pipeline (default - HF format)  
     4.3. Running the pipeline (optional - Parquet format)  
     4.4. Optional scripts  
 
-6. [API and module documentation](#3-api-and-module-documentation)  
+6. [API and module documentation](#5-api-and-module-documentation)  
     5.1. `scripts/1_fix_dataset.py`  
     5.2. `scripts/2_tokenize_dataset.py`  
     5.3. `scripts/3_train_model.py`  
@@ -94,7 +95,7 @@
     5.7. `utilities/dataset_splitter.py`  
     5.8. `utilities/parquet_utils.py`  
 
-7. [Data processing workflow details](#4-data-processing-workflow-details)  
+7. [Data processing workflow details](#6-data-processing-workflow-details)  
     6.1. Raw data loading  
     6.2. Text extraction and cleaning  
     6.3. Dataset creation and formatting  
@@ -103,7 +104,7 @@
     6.6. Data format conversion (optional)  
     6.7. Data flow summary  
 
-8. [Parquet vs Hugging Face performance comparison](#5-parquet-vs-hugging-face-performance-comparison)  
+8. [Parquet vs Hugging Face performance comparison](#7-parquet-vs-hugging-face-performance-comparison)  
     7.1. Storage efficiency  
     7.2. Loading and processing performance  
     7.3. When to use each format  
@@ -296,7 +297,8 @@ The pipeline generates processed and tokenized datasets, which can be stored in 
 - **Early Stopping:** training stops if the validation F1-score does not improve for 2 consecutive epochs.
 - **Hardware Acceleration:** automatically uses MPS (Apple Silicon) or CUDA (NVIDIA GPU) if available, otherwise CPU.
 
-### 1.6 Results
+## 2. Development outcomes
+### 2.1 Results
 
 - **Final evaluation (Test set):** The best model checkpoint (selected based on validation F1) was evaluated on the held-out test set.
 
@@ -313,27 +315,27 @@ The pipeline generates processed and tokenized datasets, which can be stored in 
   - Early stopping triggered after epoch 3, indicating no further improvement.
 - **Training curves:** Visualizations of training/validation loss and metrics over epochs can be found in `models/distilbert-bot-detector/training_curves.png`. *(Ensure this file is generated and saved there by `3_train_model.py` or move it)*
 
-### 1.7 Discussion & conclusion
+### 2.2 Discussion & conclusion
 
-#### 1.7.1 Interpretation
+#### 2.2.1 Interpretation
 - The fine-tuned DistilBERT model achieved a respectable F1-score of 77% and accuracy of 78% on the test set using only profile text and limited tweet data.
 - This indicates that the textual content available in user profiles (and a few recent tweets) contains significant signals that the model can learn to distinguish between human and bot accounts within the Twibot-20 dataset context.
 
-#### 1.7.2. Alternative model comparison (T5 vs. DistilBERT)
+#### 2.2.2. Alternative model comparison (T5 vs. DistilBERT)
 - As an alternative approach, we also implemented a T5 model (as a substitute for Llama) for the same task. The implementation is available in the `llama_model/` directory.
 - The T5 model achieved an accuracy of 72.44% and F1-score of 72.41%, which is approximately 5 percentage points lower than DistilBERT.
 - Despite being a larger model (220M parameters vs. 66M for DistilBERT), T5 performed worse on this specific task, suggesting that smaller, task-specific models can outperform larger, more general models for specialized classification tasks.
 - The T5 model also showed less decisive prediction behavior, with a tendency to classify most inputs as "Human" with moderate confidence (51-70%).
 - For detailed comparison metrics and analysis, see the `llama_model/README.md` file.
 
-#### 1.7.3. Limitations
+#### 2.2.3. Limitations
 - **Data Scope:** The primary limitation is the reliance on limited textual data. Performance could likely be improved by incorporating user metadata (account age, follower/following ratio), behavioral patterns (posting frequency, content type), or network information (connections to known bots/humans), which were not used here.
 - **Tweet Availability:** The `node_new.json` file did not consistently contain tweet data for all users, limiting the model's exposure to actual user-generated content beyond the profile.
 - **Sophisticated Bots:** The model might struggle against advanced bots designed to mimic human profiles closely or those with very sparse profiles.
 - **Generalization:** Performance on different Twitter datasets or newer bot types may vary. The Twibot-20 dataset has specific characteristics.
 - **Text Cleaning & Tokenization:** Basic cleaning was applied. More advanced NLP techniques (e.g., handling emojis, non-standard characters, language detection) were not implemented. Truncation affects a small percentage (<1%) of very long profiles/tweet combinations.
 
-#### 1.7.4. Conclusion
+#### 2.2.4. Conclusion
 - We successfully fine-tuned DistilBERT for Twitter bot detection using profile/tweet text from Twibot-20, achieving 78% accuracy.
 - The project demonstrates the viability of using Transformer models on limited text data for this task and establishes a solid baseline.
 - The integration of Apache Parquet provides significant storage savings (~5-15x) and offers flexibility for handling larger datasets or integration with other tools, although processing speed trade-offs exist compared to the native Hugging Face format for this specific dataset size.
