@@ -406,45 +406,459 @@ This will generate performance metrics and charts in the `benchmark_results/` di
 ## 9. API and Module Documentation
 
 ### 9.1. `scripts/1_extract_tweets.py`
-- **Functionality:** Extracts exactly 500 bot tweets and 500 human tweets from the Twibot-22 dataset.
-- **Key Functions:** `load_user_metadata`, `process_json_object`, `worker_process_chunk`, `process_tweet_file`, `save_dataset_to_files`.
-- **Input:** Path to the Twibot-22 directory containing tweet JSON files, label.csv, and split.csv.
-- **Output:** Extracted tweets saved to text files (tweets.txt, labels.txt) and CSV (dataset.csv).
+- **Functionality**: extracts exactly 500 bot tweets and 500 human tweets from the Twibot-22 dataset.
+- **Input**: path to the Twibot-22 directory containing tweet JSON files, `label.csv`, and `split.csv`.
+- **Output**: extracted tweets saved to text files (`tweets.txt`, `labels.txt`) and CSV (`dataset.csv`).
+
+- #### `print_memory_usage()`
+
+    - **Description**: rints the current memory usage of the script and the system.
+    
+    - **Arguments**: _None_
+    
+    - **Returns**: `system_percent` (float): The percentage of system memory being used.
+    
+    - **Details**: it uses the `psutil` library to retrieve and display memory stats.
+
+- #### `force_garbage_collection()`
+
+    - **Description**: forces garbage collection to free up memory and prints memory usage statistics.
+    
+    - **Arguments**: _None_
+    
+    - **Returns**: _None_
+    
+    - **Details**: it uses Python's `gc.collect()` to trigger garbage collection and calls `print_memory_usage()`.
+
+
+
+- #### `load_user_metadata(data_dir)`
+
+    - **Description**: loads user metadata from a CSV file to create mappings of user IDs and labels.
+    
+    - **Arguments**: `data_dir` (str): The directory where the `label.csv` file is located.
+    
+    - **Returns**:  
+        - `user_to_label` (dict): Maps user IDs to labels (1 for bot, 0 for human).  
+        - `user_id_mapping` (dict): Maps numeric user IDs to IDs with the `'u'` prefix.
+    
+    - **Details**: Processes the CSV file to build two dictionaries for user label lookups.
+
+
+- #### `process_json_object(obj, user_id_mapping, user_to_label)`
+
+    - **Description**: Processes a single JSON tweet object to extract cleaned text and its corresponding label.
+    
+    - **Arguments**:  
+        - `obj` (dict or str): JSON object, either as a string or a parsed dictionary.  
+        - `user_id_mapping` (dict): Maps numeric user IDs to `'u'`-prefixed IDs.  
+        - `user_to_label` (dict): Maps user IDs to labels.
+    
+    - **Returns**: `(text, label)` (tuple) if valid, `None` otherwise.
+
+    - **Details**: cleans the tweet text and retrieves the matching label if available.
+
+
+- #### `worker_process_chunk(chunk_data, user_id_mapping, user_to_label, bot_count, human_count, bot_target, human_target)`
+
+    - **Description**: processes a chunk of tweet data to collect valid bot and human tweets.
+    
+    - **Arguments**:  
+        - `chunk_data` (str): A block of raw tweet data.  
+        - `user_id_mapping` (dict)  
+        - `user_to_label` (dict)  
+        - `bot_count` (int): Current bot tweet count.  
+        - `human_count` (int): Current human tweet count.  
+        - `bot_target` (int): Total target for bot tweets.  
+        - `human_target` (int): Total target for human tweets.
+    
+    - **Returns**:  
+    `dict` with keys:  
+        - `'bot_tweets'` (list)  
+        - `'human_tweets'` (list)  
+        - `'bot_count'` (int)  
+        - `'human_count'` (int)
+    
+    - **Details**: filters tweets and updates the count, useful in multiprocessing.
+
+
+
+- #### `process_tweet_file(file_path, user_id_mapping, user_to_label, bot_tweets, human_tweets, bot_target, human_target, num_processes=None)`
+
+    - **Description**: processes a tweet file to extract a target number of bot and human tweets.
+
+    - **Arguments**:  
+        - `file_path` (str): Path to the tweet JSON file.  
+        - `user_id_mapping` (dict)  
+        - `user_to_label` (dict)  
+        - `bot_tweets` (list): Output container for bot tweets.  
+        - `human_tweets` (list): Output container for human tweets.  
+        - `bot_target` (int)  
+        - `human_target` (int)  
+        - `num_processes` (int, optional): Defaults to half of available CPU cores.
+
+    - **Returns**: `True` if targets are met, `False` otherwise.
+    
+    - **Details**: it uses multiprocessing to speed up extraction from large tweet files.
+
+
+
+- #### `save_dataset_to_files(bot_tweets, human_tweets, output_dir)`
+
+    - **Description**: it saves the extracted tweets and their labels to `.txt` and `.csv` files.
+    
+    - **Arguments**:  
+        - `bot_tweets` (list)  
+        - `human_tweets` (list)  
+        - `output_dir` (str): Output folder path.
+
+    - **Returns**: _None_
+    
+    - **Details**:  
+        - Creates three files: `tweets.txt`, `labels.txt`, and `dataset.csv`.  
+        - Handles newline escaping and formatting for CSV compatibility.
+
+
+- #### `main()`
+
+    - **Description**: main function that orchestrates tweet extraction and dataset saving.
+
+    - **Arguments**: _None_
+    
+    - **Returns**: _None_
+
+    - **Details**:  
+        - Parses CLI arguments, loads metadata, processes tweets, and saves output.  
+        - Calls all other functions in the correct order.
+
 
 ### 9.2. `scripts/prepare_dataset.py`
-- **Functionality:** Prepares the extracted dataset with train/validation/test splits (80/10/10).
-- **Key Functions:** `load_dataset_from_files`, `create_dataset_splits`, `main`.
-- **Input:** Directory containing the extracted tweets and labels.
-- **Output:** Processed dataset saved in Hugging Face format.
+- **Functionality**: prepares the extracted dataset with train/validation/test splits (80/10/10).
+- **Key functions**: `main`
+- **Input**: directory containing the extracted tweets and labels.
+- **Output**: processed dataset saved in Hugging Face and Parquet formats.
+
+- #### `main()`
+
+    - **Description**: Prepares the dataset of labeled tweets for training and evaluation by loading, splitting, and saving the data.
+    
+    - **Arguments** (via CLI with `argparse`):
+      - `--input-dir` (str, default=`"./extracted_1000_tweets"`): Path to the directory containing `tweets.txt` and `labels.txt`.
+      - `--output-dir` (str, optional): Output directory to save the Hugging Face format dataset. Defaults to `"data/twibot22_balanced_dataset"` if not specified.
+      - `--parquet-dir` (str, optional): Output directory to save the Apache Parquet format dataset. Defaults to `"data/twibot22_balanced_parquet"` if not specified.
+      - `--test-split` (float, default=`0.1`): Fraction of the dataset used for testing.
+      - `--validation-split` (float, default=`0.1`): Fraction of the dataset used for validation.
+      - `--seed` (int, default=`42`): Random seed to ensure reproducibility of the dataset split.
+    
+    - **Returns**: _None_
+    
+    - **Details**:
+      - Loads tweets and labels from `tweets.txt` and `labels.txt`.
+      - Creates dummy user IDs (e.g., `user_0`, `user_1`, ...).
+      - Shuffles the dataset and performs splitting using manual index slicing.
+      - Constructs a `datasets.DatasetDict` object with the splits: `train`, `validation`, and `test`.
+      - Adds a `tweet_count` field with constant value 1.
+      - Saves the final dataset:
+        - In Hugging Face format using `.save_to_disk(output_dir)`.
+        - In Parquet format using `save_dataset_to_parquet()`.
+
 
 ### 9.3. `scripts/2_tokenize_balanced_dataset.py`
-- **Functionality:** Tokenizes the balanced dataset using the DistilBERT tokenizer.
-- **Key Functions:** `preprocess_function`, `main`.
-- **Input:** Path to the balanced dataset (HF or Parquet format).
-- **Output:** Tokenized dataset saved in the specified format.
+- **Functionality**: tokenizes the balanced dataset using the DistilBERT tokenizer.
+- **Key functions**: `main`, `preprocess_function`
+- **Input**: path to the balanced dataset (Hugging Face or Parquet format).
+- **Output**: tokenized dataset saved in the specified format and tokenization statistics saved to `tokenization_info.json`.
+
+- #### `main()`
+
+    - **Description**: Main control function that handles dataset loading, tokenization, statistics computation, and saving the tokenized dataset.
+    
+    - **Arguments** (via `argparse`):
+      - `--use-parquet` (bool): If set, loads the dataset from Apache Parquet format. Otherwise, loads from Hugging Face format.
+    
+    - **Returns**: _None_
+    
+    - **Details**:
+      - Detects dataset format and loads it from either Hugging Face disk format or Apache Parquet using `load_from_disk()` or `load_parquet_as_dataset()`.
+      - Loads the `distilbert-base-uncased` tokenizer via `AutoTokenizer`.
+      - Applies the tokenizer using `dataset.map()` with `batched=True`.
+      - Computes key statistics:
+        - Average token length
+        - Maximum token length
+        - Percentage of truncated or empty samples
+      - Saves the tokenized dataset to disk in the same format it was loaded from.
+      - Stores tokenization metadata in a JSON file named `tokenization_info.json`.
+
+- #### `preprocess_function(examples)`
+
+    - **Description**: Tokenizes a batch of tweet texts using the DistilBERT tokenizer.
+    
+    - **Arguments**:
+      - `examples` (_dict_): Dictionary of features containing the `"text"` key with a list of strings.
+    
+    - **Returns**: _dict_  
+      - `input_ids`: List of token ID sequences.  
+      - `attention_mask`: List of attention masks (1 = token, 0 = padding).
+    
+    - **Details**:
+      - Uses `AutoTokenizer.from_pretrained("distilbert-base-uncased")`.
+      - Tokenizes text with:
+        - `truncation=True` (to 512 tokens)
+        - `padding=False` (assumes dynamic padding during training)
+      - Designed for use with `dataset.map()` and `batched=True` for efficiency.
 
 ### 9.4. `scripts/3_train_model.py`
-- **Functionality:** Trains a DistilBERT model on the tokenized balanced dataset.
-- **Key Functions:** `compute_metrics`, `memory_monitor`, `MemoryEfficientTrainer`, `main`.
-- **Input:** Path to the tokenized dataset (HF or Parquet format).
-- **Output:** Trained model, evaluation results, and training curves.
+- **Functionality**: trains a DistilBERT model on the tokenized balanced dataset.  
+- **Key functions**: `compute_metrics`, `memory_monitor`, `MemoryEfficientTrainer`, `main`.  
+- **Input**: path to the tokenized dataset (Hugging Face or Parquet format).  
+- **Output**: trained model, evaluation results, and training curves.  
+
+- #### `compute_metrics(pred)`
+    - **description**: computes evaluation metrics (accuracy, precision, recall, f1-score) from model predictions  
+    - **arguments**:  
+      - `pred`: prediction output object containing `.label_ids` and `.predictions`  
+    - **returns**:  
+      - `dict`:  
+        - `accuracy`: overall classification accuracy  
+        - `precision`: weighted precision score  
+        - `recall`: weighted recall score  
+        - `f1`: weighted f1-score  
+    - **details**:  
+      - applies `argmax` over logits to derive predicted labels  
+      - metrics computed using `sklearn.metrics`  
+
+- #### `memory_monitor(threshold_percent=80, force=False)`
+    - **description**: monitors system and process memory; triggers garbage collection and clears GPU memory if usage exceeds the threshold  
+    - **arguments**:  
+      - `threshold_percent` (`int`): maximum allowed memory percentage before triggering GC  
+      - `force` (`bool`): if true, triggers GC regardless of current memory usage  
+    - **returns**:  
+      - `tuple`:  
+        - `memory_mb`: memory used by the process (in MB)  
+        - `memory_percent`: system-wide memory usage (in %)  
+    - **details**:  
+      - used before and after training/evaluation steps to prevent memory spikes  
+
+- #### `class MemoryEfficientTrainer(Trainer)`
+    - **description**: subclass of `transformers.Trainer` with memory monitoring before training, evaluation, and model saving  
+    - **methods**:  
+      - `__init__(self, memory_threshold, *args, **kwargs)`: adds a memory threshold to the standard trainer  
+      - `training_step(self, model, inputs, num_items_in_batch=None)`: checks memory usage before training step  
+      - `evaluate(self, *args, **kwargs)`: performs evaluation with GC check  
+      - `save_model(self, *args, **kwargs)`: triggers GC before saving model  
+    - **properties**:  
+      - `memory_threshold` (`int`): maximum memory % before triggering garbage collection  
+    - **details**:  
+      - helps train on systems with limited RAM or VRAM (e.g. Apple M1/M2)  
+
+- #### `main()`
+    - **description**: main function to train a DistilBERT-based bot classifier on the balanced Twibot-22 dataset  
+    - **arguments** (parsed via `argparse`):  
+      - `--use-parquet`: use parquet format instead of Hugging Face format  
+      - `--batch-size`: training and evaluation batch size  
+      - `--learning-rate`: learning rate for the optimizer  
+      - `--epochs`: number of training epochs  
+      - `--weight-decay`: l2 regularization factor  
+      - `--gradient-accumulation`: number of gradient accumulation steps  
+      - `--fp16`: enable mixed-precision training  
+      - `--memory-threshold`: memory usage % that triggers GC  
+    - **returns**: _None_  
+    - **details**:  
+      - loads datasetdict with train/validation/test splits  
+      - fine-tunes `distilbert-base-uncased` using `AutoModelForSequenceClassification`  
+      - uses binary classification: `0 = human`, `1 = bot`  
+      - evaluation metrics computed using `compute_metrics()`  
+      - saves model to `models/bot_detection_model/best_model/`  
+      - saves metrics to `test_results.json`  
+      - saves training curves to `training_curves.png`  
 
 ### 9.5. `scripts/4_predict.py`
-- **Functionality:** Uses the trained model to make predictions on new text inputs.
-- **Key Functions:** `predict_bot_probability`, `main`.
-- **Input:** Text to classify (via interactive prompt).
-- **Output:** Prediction (human/bot) and confidence score.
+- **Functionality**: uses the trained model to make predictions on new text inputs.  
+- **Key functions**: `predict_bot_probability`, `main`.  
+- **Input**: text to classify (via interactive prompt).  
+- **Output**: prediction (human or bot) and confidence score. 
+
+- #### `predict_bot_probability(text, model, tokenizer, device)`
+    - **description**: predicts whether a given text was written by a bot or a human using a fine-tuned distilbert model  
+    - **arguments**:  
+      - `text` (`str`): the input text to classify  
+      - `model` (`AutoModelForSequenceClassification`): the trained classification model  
+      - `tokenizer` (`PreTrainedTokenizer`): tokenizer used for encoding the input  
+      - `device` (`torch.device`): device used for inference (`cpu`, `cuda`, or `mps`)  
+    - **returns**:  
+      - `tuple`:  
+        - `prediction` (`str`): "human" or "bot"  
+        - `probability` (`float`): confidence score of the predicted class  
+    - **details**:  
+      - tokenizes the input text  
+      - performs inference with `torch.no_grad()`  
+      - uses softmax to convert logits into probabilities  
+      - selects the label with the highest probability via `argmax`  
+
+- #### `main()`
+    - **description**: loads the trained model, predicts on example tweets, and starts an interactive prediction prompt  
+    - **arguments**: _None_  
+    - **returns**: _None_  
+    - **details**:  
+      - loads the model from `models/bot_detection_model/best_model/`  
+      - loads the `distilbert-base-uncased` tokenizer  
+      - automatically selects device (`cuda`, `mps`, or `cpu`)  
+      - makes predictions on 5 hardcoded sample tweets  
+      - launches an interactive prompt for live predictions  
+      - exits when user types `"q"` or `"quit"`  
 
 ### 9.6. `scripts/benchmark_parquet.py`
-- **Functionality:** Benchmarks the performance of Hugging Face vs Parquet formats.
-- **Key Functions:** `benchmark_loading`, `benchmark_filtering`, `benchmark_mapping`, `plot_results`.
-- **Input:** Paths to datasets in both formats.
-- **Output:** Performance metrics, charts, and a detailed markdown report.
+- **Functionality:** benchmarks the performance of hugging face vs parquet formats.
+- **Key functions:** `benchmark_loading`, `benchmark_filtering`, `benchmark_mapping`, `plot_results`.
+- **Input:** paths to datasets in both formats.
+- **Output:** performance metrics, charts, and a detailed markdown report.
+
+- #### `print_memory_usage()`
+    - **description**: prints and returns the current memory usage of the system and the running process  
+    - **arguments**: _none_  
+    - **returns**:  
+      - `memory_mb` (`float`): memory usage of the current process in MB  
+    - **details**:  
+      - uses `psutil` to retrieve system and process memory stats  
+      - helpful for monitoring before and after data operations  
+
+- #### `force_garbage_collection()`
+    - **description**: forces python garbage collection and prints updated memory usage  
+    - **arguments**: _none_  
+    - **returns**: _none_  
+    - **details**:  
+      - uses `gc.collect()`  
+      - calls `print_memory_usage()` to show reclaimed memory  
+
+- #### `get_directory_size(path)`
+    - **description**: calculates the total size of a directory (recursively) in megabytes  
+    - **arguments**:  
+      - `path` (`str`): path to the directory  
+    - **returns**:  
+      - `size_mb` (`float`): total directory size in MB  
+    - **details**:  
+      - uses `os.walk()` to sum the size of all files  
+      - useful to compare disk usage of hf vs parquet formats  
+
+- #### `benchmark_loading(hf_path, parquet_path)`
+    - **description**: benchmarks the time and memory used to load datasets from hugging face and parquet formats  
+    - **arguments**:  
+      - `hf_path` (`str`): path to hugging face dataset  
+      - `parquet_path` (`str`): path to parquet dataset  
+    - **returns**: `dict` with keys:  
+      - `hf_loading_time`, `parquet_loading_time`  
+    - **details**:  
+      - loads using `load_from_disk()` and `load_parquet_as_dataset()`  
+      - measures load time and memory change  
+
+- #### `benchmark_filtering(hf_path, parquet_path)`
+    - **description**: benchmarks `.filter()` performance for both formats  
+    - **arguments**:  
+      - `hf_path` (`str`)  
+      - `parquet_path` (`str`)  
+    - **returns**: `dict` with keys:  
+      - `hf_filtering_time`, `parquet_filtering_time`  
+    - **details**:  
+      - applies filter `lambda x: x['label'] == 1`  
+      - compares duration and output size  
+
+- #### `benchmark_mapping(hf_path, parquet_path)`
+    - **description**: benchmarks `.map()` performance by adding a computed column  
+    - **arguments**:  
+      - `hf_path` (`str`)  
+      - `parquet_path` (`str`)  
+    - **returns**: `dict` with keys:  
+      - `hf_mapping_time`, `parquet_mapping_time`  
+    - **details**:  
+      - adds a `text_length` column using `lambda x: len(x["text"])`  
+
+- #### `plot_results(results, output_dir)`
+    - **description**: visualizes and saves benchmark charts and markdown reports  
+    - **arguments**:  
+      - `results` (`dict`): contains all benchmark metrics  
+      - `output_dir` (`str`): directory to save plots and report  
+    - **returns**: _none_  
+    - **details**:  
+      - saves `storage_comparison.png`, `performance_comparison.png`  
+      - generates `parquet_performance.md` with tables and figures  
+
+- #### `main()`
+    - **description**: entry point that runs all benchmarks and saves results  
+    - **arguments**: _none_ (uses `argparse` for cli inputs)  
+    - **returns**: _none_  
+    - **details**:  
+      - expects paths via CLI: `--hf-processed`, `--parquet-processed`, `--hf-tokenized`, `--parquet-tokenized`, `--output-dir`  
+      - calls:  
+        - `get_directory_size()`  
+        - `benchmark_loading()`  
+        - `benchmark_filtering()`  
+        - `benchmark_mapping()`  
+        - `plot_results()`  
 
 ### 9.7. `utilities/parquet_utils.py`
-- **Functionality:** Utilities for working with Apache Parquet format.
-- **Key Functions:** `print_memory_usage`, `force_garbage_collection`, `save_dataset_to_parquet`, `load_parquet_as_dataset`.
-- **Usage:** Used by the pipeline scripts to save and load datasets in Parquet format.
+- **Functionality:** utilities for working with apache parquet format.
+- **Key functions:** `print_memory_usage`, `force_garbage_collection`, `save_dataset_to_parquet`, `load_parquet_as_dataset`.
+- **Usage:** used by the pipeline scripts to save and load datasets in parquet format.
+
+- #### `print_memory_usage()`
+    - **description**: prints current memory usage of the process and available system memory  
+    - **arguments**: _none_  
+    - **returns**:  
+      - `memory_mb` (`float`): current process memory in mb  
+      - `system_percent` (`float`): system-wide memory usage percentage  
+    - **details**: uses `psutil` to fetch memory statistics  
+
+- #### `wait_for_memory(target_percent=75, max_wait=10, check_interval=1)`
+    - **description**: waits until system memory usage drops below a target threshold  
+    - **arguments**:  
+      - `target_percent` (`int`, default=75): memory usage threshold to wait for  
+      - `max_wait` (`int`, default=10): maximum time in seconds to wait  
+      - `check_interval` (`int`, default=1): time interval between checks  
+    - **returns**: `bool` — whether memory dropped below target before timeout  
+    - **details**: checks system memory in a loop with optional timeout  
+
+- #### `force_garbage_collection(pause_seconds=2)`
+    - **description**: triggers garbage collection and waits briefly to allow cleanup  
+    - **arguments**:  
+      - `pause_seconds` (`int`, default=2): sleep time after gc to allow memory stabilization  
+    - **returns**: `float` — memory usage in mb after cleanup  
+    - **details**: helpful before/after loading/saving large datasets  
+
+- #### `save_dataset_to_parquet(dataset, output_dir, batch_size=1000, verbose=True)`
+    - **description**: saves a hugging face dataset or datasetdict to parquet files efficiently using batch-wise writing  
+    - **arguments**:  
+      - `dataset` (`Dataset` or `DatasetDict`): dataset to save  
+      - `output_dir` (`str`): output directory for parquet files  
+      - `batch_size` (`int`, default=1000): number of rows per write batch  
+      - `verbose` (`bool`, default=True): log progress if true  
+    - **returns**: _none_  
+    - **output format**:  
+      - for `DatasetDict`: each split saved as `<split>.parquet`  
+      - for `Dataset`: saved as `dataset.parquet`  
+      - also saves `dataset_info.json` with metadata  
+
+- #### `load_parquet_as_dataset(input_dir, split=None, batch_size=5000, verbose=True)`
+    - **description**: loads datasets from parquet format into hugging face dataset or datasetdict  
+    - **arguments**:  
+      - `input_dir` (`str`): directory containing parquet files  
+      - `split` (`str`, optional): if provided, loads a specific split  
+      - `batch_size` (`int`, default=5000): unused but reserved  
+      - `verbose` (`bool`, default=True): log memory and progress  
+    - **returns**: `Dataset` or `DatasetDict` — loaded data  
+    - **input format**:  
+      - `<split>.parquet` files or a single `dataset.parquet`  
+
+- #### `process_in_batches(function, data, batch_size=100, **kwargs)`
+    - **description**: applies a function to data in memory-efficient batches  
+    - **arguments**:  
+      - `function` (`callable`): the function to apply to each batch  
+      - `data` (`list` or indexable): the data to process  
+      - `batch_size` (`int`, default=100): number of items per batch  
+      - `**kwargs`: passed to the function  
+    - **returns**: `list` — concatenated results from all batches  
+    - **details**:  
+      - garbage collection is called between batches to manage memory  
+      - useful for applying transforms on large lists or arrays 
 
 ## 10. Data Processing Workflow Details
 
@@ -459,7 +873,7 @@ This section details the sequence of operations transforming raw Twitter data in
 - `label.csv`: User labels (bot/human)
 - `split.csv`: Dataset splits (train/test/dev)
 
-**Key Functions:**
+**Key functions:**
 - `load_user_metadata(label_file, split_file)`: Parses CSV files to create dictionaries mapping user IDs to labels and splits
 - `process_json_object(obj, user_metadata)`: Processes a single JSON object from the tweet files, extracting relevant data if the user is in our target set
 - `worker_process_chunk(chunk, user_metadata, results_queue)`: Processes a chunk of JSON data in a worker process, handling JSON parsing errors gracefully
@@ -478,7 +892,7 @@ This section details the sequence of operations transforming raw Twitter data in
 **Input:**
 - Parsed tweet data and user metadata
 
-**Key Functions:**
+**Key functions:**
 - `clean_text(text)`: Removes URLs, special characters, and normalizes whitespace using regex patterns
 - `extract_tweet_text(tweet_obj)`: Extracts the text content from a tweet object
 - `save_dataset_to_files(tweets, labels, output_dir)`: Saves the extracted tweets and labels to text files
@@ -497,7 +911,7 @@ This section details the sequence of operations transforming raw Twitter data in
 **Input:**
 - Extracted and cleaned tweets with labels
 
-**Key Functions:**
+**Key functions:**
 - `load_dataset_from_files(input_dir)`: Reads the text files containing tweets and labels
 - `create_dataset_dict(train_df, validation_df, test_df)`: Creates a Hugging Face DatasetDict with proper feature typing
 - `Dataset.from_pandas(df, features=features)`: Converts pandas DataFrames to Hugging Face Datasets
@@ -516,7 +930,7 @@ This section details the sequence of operations transforming raw Twitter data in
 **Input:**
 - The initial Dataset created in step 10.3
 
-**Key Functions:**
+**Key functions:**
 - `random.shuffle(indices)`: Randomizes the order of dataset indices
 - `df.iloc[indices]`: Selects rows from the DataFrame based on shuffled indices
 - `DatasetDict({'train': train_dataset, 'validation': validation_dataset, 'test': test_dataset})`: Creates a dictionary of datasets for each split
@@ -534,7 +948,7 @@ This section details the sequence of operations transforming raw Twitter data in
 **Input:**
 - The processed DatasetDict (from HF disk or Parquet)
 
-**Key Functions:**
+**Key functions:**
 - `load_from_disk(dataset_path)` or `load_parquet_as_dataset(dataset_path)`: Loads the dataset from disk
 - `AutoTokenizer.from_pretrained("distilbert-base-uncased")`: Initializes the DistilBERT tokenizer
 - `preprocess_function(examples)`: Applies tokenization to batches of examples
@@ -555,7 +969,7 @@ This section details the sequence of operations transforming raw Twitter data in
 - All pipeline scripts with `--use-parquet` flag
 - `scripts/benchmark_parquet.py` for performance comparison
 
-**Key Functions:**
+**Key functions:**
 - `save_dataset_to_parquet(dataset_dict, output_dir)`: Converts and saves a DatasetDict to Parquet format
 - `load_parquet_as_dataset(input_dir)`: Loads a DatasetDict from Parquet files
 - `benchmark_loading()`, `benchmark_filtering()`, `benchmark_mapping()`: Compare performance between formats
