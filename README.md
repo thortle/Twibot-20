@@ -84,16 +84,22 @@
     4.4. Optional scripts  
 
 5. [API and module documentation](#5-api-and-module-documentation)  
-    5.1. `scripts/1_fix_dataset.py`  
-    5.2. `scripts/2_tokenize_dataset.py`  
-    5.3. `scripts/3_train_model.py`  
-    5.4. `scripts/4_predict.py`  
-    5.5. `scripts/convert_to_parquet.py`  
-    5.6. `scripts/benchmark_parquet.py`  
-    5.7. `utilities/dataset_splitter.py`  
-    5.8. `utilities/parquet_utils.py`  
+    5.1. `llama_model/scripts/1_fix_dataset.py`  
+    5.2. `llama_model/scripts/2_tokenize_dataset.py`  
+    5.3. `llama_model/scripts/3_train_model.py`  
+    5.4. `llama_model/scripts/4_predict.py`
+    5.5. `llama_model/scripts/sample_prediction.py`  
+    5.6. `llama_model/utilities/dataset_splitter.py`  
+    5.7. `scripts/1_fix_dataset.py`  
+    5.8. `scripts/2_tokenize_dataset.py`
+    5.9  `scripts/3_train_model.py`
+    5.10 `scripts/4_predict.py`
+    5.11. `scripts/benchmark_parquet.py`
+    5.12. `scripts/convert_to_parquet.py`
+    5.13. `utilities/dataset_splitter.py`
+    5.14. `utilities/parquet_utils.py`
 
-6. [Data processing workflow details](#6-data-processing-workflow-details)  
+7. [Data processing workflow details](#6-data-processing-workflow-details)  
     6.1. Raw data loading  
     6.2. Text extraction and cleaning  
     6.3. Dataset creation and formatting  
@@ -102,14 +108,14 @@
     6.6. Data format conversion (optional)  
     6.7. Data flow summary  
 
-7. [Parquet vs Hugging Face performance comparison](#7-parquet-vs-hugging-face-performance-comparison)  
+8. [Parquet vs Hugging Face performance comparison](#7-parquet-vs-hugging-face-performance-comparison)  
     7.1. Storage efficiency  
     7.2. Loading and processing performance  
     7.3. When to use each format  
     7.4. Conclusion  
 
-8. [Requirements](#8-requirements)
-9. [Dataset attribution and citation](#9-dataset-attribution-and-citation)
+9. [Requirements](#8-requirements)
+10. [Dataset attribution and citation](#9-dataset-attribution-and-citation)
 
 ---
 
