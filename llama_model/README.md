@@ -106,13 +106,13 @@ In this project, we used T5 as a substitute for Llama due to access restrictions
 
 ### 2. Model Architecture and Size
 
-**T5 Model:**
+**T5 Model :**
 - Architecture: Encoder-decoder transformer
 - Size: ~220M parameters (T5-base)
 - Model file size: ~894MB
 - Designed for sequence-to-sequence tasks
 
-**DistilBERT Model:**
+**DistilBERT Model :**
 - Architecture: Encoder-only transformer
 - Size: ~66M parameters (3.3x smaller than T5)
 - Designed specifically for classification and understanding tasks
@@ -120,13 +120,13 @@ In this project, we used T5 as a substitute for Llama due to access restrictions
 
 ### 3. Prediction Behavior
 
-**T5 Model:**
+**T5 Model :**
 - Tends to classify most inputs as "Human" with moderate confidence (51-70%)
 - Less decisive in its predictions
 - Confidence scores are generally lower and closer to 50% (random chance)
 - All sample texts were classified as "Human", even those that are clearly bot-like
 
-**DistilBERT Model:**
+**DistilBERT Model :**
 - Makes more varied predictions (both "Human" and "Bot")
 - Higher confidence in its predictions (often >90% for bot detection)
 - Correctly identified obvious bot-like texts (e.g., "FREE BITCOIN!" with 98.28% confidence)
@@ -134,14 +134,14 @@ In this project, we used T5 as a substitute for Llama due to access restrictions
 
 ### 4. Practical Considerations
 
-**T5 Model:**
+**T5 Model :**
 - More complex to work with
 - Requires special handling for output formats
 - Slower inference time
 - Less decisive predictions make it less useful for practical applications
 - Larger storage and memory requirements
 
-**DistilBERT Model:**
+**DistilBERT Model :**
 - Simpler architecture
 - Faster inference
 - More decisive and accurate predictions
