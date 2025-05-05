@@ -665,54 +665,54 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 - **Key Functions:** `load_twibot20_data()`, `extract_text_from_user()`, `clean_text()`, `convert_to_hf_dataset()`, `main()`.
 
-- **Input:** path to the directory containing the original JSON files (`data/Twibot-20/`). Optional argument `--use-parquet`.
+- **Input :** path to the directory containing the original JSON files (`data/Twibot-20/`). Optional argument `--use-parquet`.
 
 - **Output:** dataset (DatasetDict) saved to disk (`data/twibot20_fixed_dataset/`) OR in Parquet format (`data/twibot20_fixed_parquet/`).
 
 - #### `load_twibot20_data(data_dir)`
-    - **description**: loads the Twibot-20 json files (`node_new.json`, `label_new.json`, `split_new.json`) into dictionaries  
-    - **arguments**:  
+    - **Description :** loads the Twibot-20 json files (`node_new.json`, `label_new.json`, `split_new.json`) into dictionaries  
+    - **Arguments :**  
       - `data_dir` (`str`): path to folder containing the json files  
-    - **returns**:  
+    - **Returns :**  
       - `tuple`: `(nodes, labels, splits)`  
         - `nodes` (`dict`): user metadata  
         - `labels` (`dict`): user ID to label mapping ("bot" or "human")  
         - `splits` (`dict`): train/test split lists  
-    - **details**: loads and parses three json files from the given path  
+    - **Details :** loads and parses three json files from the given path  
 
 - #### `extract_text_from_user(user_data)`
-    - **description**: extracts a concatenated string of profile fields and tweets from a user entry  
-    - **arguments**:  
+    - **Description :** extracts a concatenated string of profile fields and tweets from a user entry  
+    - **Arguments :**  
       - `user_data` (`dict`): metadata dictionary for a single user  
-    - **returns**:  
+    - **Returns :**  
       - `str`: cleaned string combining name, username, location, description, and up to 5 tweets  
-    - **details**: formats each element with labels (e.g. `"Username: ..."`) and joins everything with newlines  
+    - **Details :** formats each element with labels (e.g. `"Username: ..."`) and joins everything with newlines  
 
 - #### `clean_text(text)`
-    - **description**: removes urls, extra whitespace, and trims input string  
-    - **arguments**:  
+    - **Description :** removes urls, extra whitespace, and trims input string  
+    - **Arguments :**  
       - `text` (`str`): raw input string  
-    - **returns**:  
+    - **Returns :**  
       - `str`: cleaned version  
-    - **details**: called from `extract_text_from_user` to normalize the final text sample  
+    - **Details :** called from `extract_text_from_user` to normalize the final text sample  
 
 - #### `convert_to_hf_dataset(nodes, labels, splits)`
-    - **description**: converts nodes and labels into a Hugging Face `DatasetDict`  
-    - **arguments**:  
+    - **Description :** converts nodes and labels into a Hugging Face `DatasetDict`  
+    - **Arguments :**  
       - `nodes` (`dict`): user metadata  
       - `labels` (`dict`): user label mapping  
       - `splits` (`dict`): split definitions  
-    - **returns**:  
+    - **Returns :**  
       - `DatasetDict`: with `train` and `test` splits  
-    - **details**:  
+    - **Details :**  
       - each record includes `user_id`, `text`, `features` (json string), `label` (0 or 1)  
       - applies feature typing with `datasets.Features` and `ClassLabel`  
 
 - #### `main()`
-    - **description**: main function that orchestrates the dataset preprocessing pipeline  
-    - **arguments**: _none_ (uses argparse internally)  
-    - **returns**: _none_  
-    - **details**:  
+    - **Description :** main function that orchestrates the dataset preprocessing pipeline  
+    - **Arguments :** _none_ (uses argparse internally)  
+    - **Returns :** _none_  
+    - **Details :**  
       - loads the raw dataset using `load_twibot20_data`  
       - processes and converts data via `convert_to_hf_dataset`  
       - splits the train set using `utilities.dataset_splitter.split_dataset`  
@@ -725,15 +725,15 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 - **Key Functions:** `preprocess_function()`, `main()`.
 
-- **Input:** path to the processed dataset (`data/twibot20_fixed_dataset/` or `data/twibot20_fixed_parquet/`). Optional argument `--use-parquet`.
+- **Input :** path to the processed dataset (`data/twibot20_fixed_dataset/` or `data/twibot20_fixed_parquet/`). Optional argument `--use-parquet`.
 
 - **Output:** tokenized dataset (DatasetDict) saved to disk (`data/twibot20_fixed_tokenized/`) OR in Parquet format (`data/twibot20_tokenized_parquet/`).
 
 - #### `main()`
-    - **description**: main pipeline function that loads a Twibot-20 dataset, tokenizes it using the T5 tokenizer, and saves the tokenized result  
-    - **arguments**: _none_ (uses argparse internally)  
-    - **returns**: _none_  
-    - **details**:  
+    - **Description :** main pipeline function that loads a Twibot-20 dataset, tokenizes it using the T5 tokenizer, and saves the tokenized result  
+    - **Arguments :** _none_ (uses argparse internally)  
+    - **Returns :** _none_  
+    - **Details :**  
       - loads dataset from disk using `load_from_disk()` or `load_parquet_as_dataset()`  
       - prints basic statistics: text lengths, label distribution  
       - loads tokenizer with `AutoTokenizer.from_pretrained("google/flan-t5-base")`  
@@ -743,14 +743,14 @@ This section provides a detailed description of inputs, outputs, and key functio
       - saves metadata in a `tokenization_info.json` file  
 
 - #### `preprocess_function(examples)`
-    - **description**: applies tokenizer to the `text` field of dataset entries  
-    - **arguments**:  
+    - **Description :** applies tokenizer to the `text` field of dataset entries  
+    - **Arguments :**  
       - `examples` (`dict`): batch of examples with a `"text"` key  
-    - **returns**:  
+    - **Returns :**  
       - `dict` with:  
         - `input_ids` (`List[int]`): token IDs  
         - `attention_mask` (`List[int]`): attention mask  
-    - **details**:  
+    - **Details :**  
       - truncates sequences to `tokenizer.model_max_length`  
       - no padding is applied (uses dynamic padding via `DataCollator` during training)  
       - used via `dataset.map(preprocess_function, batched=True)`  
@@ -762,31 +762,31 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 - **Key Functions:** `compute_metrics()`, `main()`.
 
-- **Input:** path to the tokenized dataset (`data/twibot20_fixed_tokenized/` or `data/twibot20_tokenized_parquet/`). Optional argument `--use-parquet`.
+- **Input :** path to the tokenized dataset (`data/twibot20_fixed_tokenized/` or `data/twibot20_tokenized_parquet/`). Optional argument `--use-parquet`.
 
 - **Output:** fine-tuned model (`models/distilbert-bot-detector/`), evaluation results (console), training curves (`training_curves.png`).
 
 - #### `compute_metrics(eval_pred)`
-    - **description**: computes evaluation metrics (accuracy, precision, recall, F1) from model predictions and labels. handles cases where model output is nested (e.g., T5 or LLaMA)  
-    - **arguments**:  
+    - **Description :** computes evaluation metrics (accuracy, precision, recall, F1) from model predictions and labels. handles cases where model output is nested (e.g., T5 or LLaMA)  
+    - **Arguments :**  
       - `eval_pred` (`tuple`): (predictions, labels)  
         - `predictions`: `np.ndarray` or tuple of logits  
         - `labels`: `np.ndarray`  
-    - **returns**:  
+    - **Returns :**  
       - `dict` with:  
         - `accuracy` (`float`)  
         - `precision` (`float`)  
         - `recall` (`float`)  
         - `f1` (`float`)  
-    - **details**:  
+    - **Details :**  
       - reshapes logits if needed (e.g., 3D shape from seq-to-seq models)  
       - uses `sklearn.metrics` for metric computation  
 
 - #### `main()`
-    - **description**: main function to load the tokenized Twibot-20 dataset, load tokenizer and model (Flan-T5 as LLaMA substitute), train the model, evaluate, and save it  
-    - **arguments**: _none_ (parsed via `argparse` CLI flags)  
-    - **returns**: _none_  
-    - **details**:  
+    - **Description :** main function to load the tokenized Twibot-20 dataset, load tokenizer and model (Flan-T5 as LLaMA substitute), train the model, evaluate, and save it  
+    - **Arguments :** _none_ (parsed via `argparse` CLI flags)  
+    - **Returns :** _none_  
+    - **Details :**  
       - loads dataset from HF or Parquet depending on `--use-parquet`  
       - loads `google/flan-t5-base` tokenizer and model  
       - configures training args (`TrainingArguments`)  
@@ -802,31 +802,31 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 - **Key Functions:** `predict_bot_probability()`, `main()`.
 
-- **Input:** text to classify (via prompt), path to model (`models/distilbert-bot-detector/`).
+- **Input :** text to classify (via prompt), path to model (`models/distilbert-bot-detector/`).
 
 - **Output:** prediction ('Human'/'Bot') and confidence (console).
 
 - #### `predict_bot_probability(text, model, tokenizer, device)`
-    - **description**: predicts whether a given input text is from a human or a bot using a fine-tuned sequence classification model  
-    - **arguments**:  
+    - **Description :** predicts whether a given input text is from a human or a bot using a fine-tuned sequence classification model  
+    - **Arguments :**  
       - `text` (`str`): the input text to classify  
       - `model` (`AutoModelForSequenceClassification`): fine-tuned transformer model  
       - `tokenizer` (`AutoTokenizer`): tokenizer corresponding to the model  
       - `device` (`torch.device`): computation device (`cpu`, `cuda`, or `mps`)  
-    - **returns**: `tuple`  
+    - **Returns :** `tuple`  
       - `prediction` (`int`): 0 = human, 1 = bot  
       - `probability` (`float`): confidence score (between 0 and 1)  
-    - **details**:  
+    - **Details :**  
       - input text is tokenized with truncation  
       - model inference is performed under `torch.no_grad()`  
       - softmax applied to logits to compute class probabilities  
       - the predicted label is selected with `argmax`  
 
 - #### `main()`
-    - **description**: main entry point for running predictions using the fine-tuned bot detection model  
-    - **arguments**: _none_  
-    - **returns**: _none_  
-    - **details**:  
+    - **Description :** main entry point for running predictions using the fine-tuned bot detection model  
+    - **Arguments :** _none_  
+    - **Returns :** _none_  
+    - **Details :**  
       - loads the model and tokenizer from `models/distilbert-bot-detector/`  
       - auto-selects the best available device (`cuda`, `mps`, `cpu`)  
       - supports two usage modes:  
@@ -836,35 +836,35 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 ### 5.5 `llama_model/scripts/sample_prediction.py`
 
-- **functionality**: loads a fine-tuned transformer model (e.g., Flan-T5 used as LLaMA proxy) and performs predictions on tweet-like text input  
-- **key functions**: `load_model`, `predict`, `main`  
-- **input**: model path, optional user text input via prompt  
-- **output**: prediction (human or bot) and confidence score printed to the console  
+- **Functionality :** loads a fine-tuned transformer model (e.g., Flan-T5 used as LLaMA proxy) and performs predictions on tweet-like text input  
+- **Key Functions :** `load_model`, `predict`, `main`  
+- **Input :** model path, optional user text input via prompt  
+- **Output :** prediction (human or bot) and confidence score printed to the console  
 
 - #### `load_model(model_path)`
-    - **description**: loads a fine-tuned transformer model for sequence classification, along with its tokenizer and device setup  
-    - **arguments**:  
+    - **Description :** loads a fine-tuned transformer model for sequence classification, along with its tokenizer and device setup  
+    - **Arguments :**  
       - `model_path` (`str`): path to the directory containing the trained model  
-    - **returns**: `tuple`  
+    - **Returns :** `tuple`  
       - `model`: loaded `AutoModelForSequenceClassification`  
       - `tokenizer`: loaded `AutoTokenizer`  
       - `device`: `torch.device` (cuda, mps, or cpu)  
-    - **details**:  
+    - **Details :**  
       - loads model and tokenizer from disk using Hugging Face Transformers  
       - selects the best available hardware (GPU via CUDA, Apple MPS, or CPU)  
       - puts model in evaluation mode with `model.eval()`  
 
 - #### `predict(text, model, tokenizer, device)`
-    - **description**: performs inference on a single input text using the fine-tuned model  
-    - **arguments**:  
+    - **Description :** performs inference on a single input text using the fine-tuned model  
+    - **Arguments :**  
       - `text` (`str`): the input text to classify  
       - `model` (`AutoModelForSequenceClassification`): trained classification model  
       - `tokenizer` (`AutoTokenizer`): tokenizer associated with the model  
       - `device` (`torch.device`): target device for running inference  
-    - **returns**: `tuple`  
+    - **Returns :** `tuple`  
       - `prediction` (`int`): 0 = human, 1 = bot  
       - `confidence` (`float`): softmax probability of the predicted class  
-    - **details**:  
+    - **Details :**  
       - tokenizes text with `tokenizer(..., return_tensors='pt')`  
       - sends input to the target device  
       - performs model inference with `torch.no_grad()`  
@@ -872,16 +872,63 @@ This section provides a detailed description of inputs, outputs, and key functio
       - returns highest scoring class and associated confidence  
 
 - #### `main()`
-    - **description**: driver function that loads the model, performs predictions on sample tweets, and offers interactive user input  
-    - **arguments**: _none_  
-    - **returns**: _none_  
-    - **details**:  
+    - **Description :** driver function that loads the model, performs predictions on sample tweets, and offers interactive user input  
+    - **Arguments :** _none_  
+    - **Returns :** _none_  
+    - **Details :**  
       - loads model and tokenizer from `llama_model/models/llama-bot-detector`  
       - runs predictions on hardcoded example tweets  
       - launches an interactive prompt that allows the user to input any text  
       - prints predicted label (`human` or `bot`) with confidence score  
       - exits the loop when the user types `quit`  
       - includes error handling for model loading issues  
+
+### 5.6 `llama_model/utilities/dataset_splitter.py`
+
+- **Functionality :** splits a Hugging Face `DatasetDict` into `train`, `validation`, and `test` splits using stratified sampling on the `label` column.
+
+- **Key Functions :** `split_dataset`
+
+- **Input :**  
+  - Hugging Face `DatasetDict` object with `"train"` and `"test"` splits.
+  - `"train"` must contain a `label` column for stratification.
+
+- **Output :** a new `DatasetDict` with splits: `train`, `validation`, and `test`.
+
+
+- ### `split_dataset(combined_dataset, test_size=0.1, stratify_by_column='label', random_state=42)`
+
+  - **Description :** splits the `"train"` split of a `DatasetDict` into new `"train"` and `"validation"` splits, stratified by the given column.
+
+  - **Arguments :**
+    - `combined_dataset` (`DatasetDict`): dataset with `"train"` and `"test"` splits.
+    - `test_size` (`float`, default=`0.1`): fraction of `"train"` to use for `"validation"`.
+    - `stratify_by_column` (`str`, default=`'label'`): column to stratify on (must be in `"train"` split).
+    - `random_state` (`int`, default=`42`): random seed for reproducibility.
+
+  - **Returns :**  
+    `DatasetDict` with 3 keys:
+    - `"train"`: remaining training data.
+    - `"validation"`: stratified sample from original `"train"`.
+    - `"test"`: untouched original test set.
+
+  - **Details :**
+    - if `stratify_by_column` is a `ClassLabel`, uses Hugging Face’s `train_test_split()`.
+    - otherwise uses `sklearn.model_selection.train_test_split()` with manual index slicing.
+    - the function prints the size of each final split to the console.
+
+### 5.7 `scripts/1_fix_dataset.py`
+### 5.8 `scripts/2_tokenize_dataset.py`
+### 5.9 `scripts/3_train_model.py`
+### 5.10 `scripts/4_predict.py`
+
+### 5.. `scripts/benchmark_parquet.py`
+
+- **Functionality:** compares the performance of HF disk and Parquet formats.
+
+- **Input :** paths to datasets in both formats.
+
+- **Output:** results (console), markdown report and charts (`benchmark_results/`).
 
 
 ### 5.. `scripts/convert_to_parquet.py`
@@ -892,13 +939,6 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 - **Usage:** manual tool for format conversion.
 
-### 5.. `scripts/benchmark_parquet.py`
-
-- **Functionality:** compares the performance of HF disk and Parquet formats.
-
-- **Input:** paths to datasets in both formats.
-
-- **Output:** results (console), markdown report and charts (`benchmark_results/`).
 
 ### 5.. `utilities/dataset_splitter.py`
 
@@ -920,7 +960,7 @@ This section details the sequence of operations transforming raw data into model
 
 **Script:** `scripts/1_fix_dataset.py`
 
-**Input:**
+**Input :**
 - `node_new.json`: contains user profile information and tweets
 - `label_new.json`: maps user IDs to labels (human/bot)
 - `split_new.json`: defines original train/test user ID lists
@@ -943,7 +983,7 @@ This section details the sequence of operations transforming raw data into model
 
 **Script:** `scripts/1_fix_dataset.py`
 
-**Input:**
+**Input :**
 - Parsed dictionaries from step 4.1
 
 **Key functions:**
@@ -964,7 +1004,7 @@ This section details the sequence of operations transforming raw data into model
 
 **Script:** `scripts/1_fix_dataset.py`
 
-**Input:**
+**Input :**
 - Cleaned text for each user, labels dictionary, splits dictionary
 
 **Key functions:**
@@ -992,7 +1032,7 @@ This section details the sequence of operations transforming raw data into model
 
 **Script:** `scripts/1_fix_dataset.py` (using `utilities/dataset_splitter.py`)
 
-**Input:**
+**Input :**
 - The initial DatasetDict with 'train' and 'test' splits
 
 **Key functions:**
@@ -1019,7 +1059,7 @@ This section details the sequence of operations transforming raw data into model
 
 **Script:** `scripts/2_tokenize_dataset.py`
 
-**Input:**
+**Input :**
 - The processed DatasetDict with 'train', 'validation', and 'test' splits
 
 **Key functions:**
