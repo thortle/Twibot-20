@@ -206,9 +206,9 @@ The project is organized into two main parts : Twibot-20 (main project) and Twib
 
 The project follows a 4-step pipeline, executed via scripts in the `scripts/` directory :
 
-1.  **Data Extraction & Preprocessing** (`1_fix_dataset.py`): loads raw data, extracts profile/tweet text, cleans it, splits into train/validation/test sets, and saves the processed dataset.
+1.  **Data extraction and preprocessing** (`1_fix_dataset.py`): loads raw data, extracts profile/tweet text, cleans it, splits into train/validation/test sets, and saves the processed dataset.
 2.  **Tokenization** (`2_tokenize_dataset.py`): loads the processed dataset and converts the text into tokens suitable for the DistilBERT model.
-3.  **Model Training** (`3_train_model.py`): loads the tokenized dataset and fine-tunes the DistilBERT model for bot classification. Evaluates the model.
+3.  **Model training** (`3_train_model.py`): loads the tokenized dataset and fine-tunes the DistilBERT model for bot classification. Evaluates the model.
 4.  **Prediction** (`4_predict.py`): loads the fine-tuned model and provides an interface for classifying new text samples.
 
 Each step (`1`, `2`, `3`) supports using either the standard Hugging Face dataset format or the Apache Parquet format via the `--use-parquet` flag for enhanced storage efficiency.
@@ -334,11 +334,11 @@ The pipeline generates processed and tokenized datasets, which can be stored in 
 - For detailed comparison metrics and analysis, see the `llama_model/README.md` file.
 
 #### 2.2.3. Limitations
-- **Data Scope :** The primary limitation is the reliance on limited textual data. Performance could likely be improved by incorporating user metadata (account age, follower/following ratio), behavioral patterns (posting frequency, content type), or network information (connections to known bots/humans), which were not used here.
-- **Tweet Availability :** The `node_new.json` file did not consistently contain tweet data for all users, limiting the model's exposure to actual user-generated content beyond the profile.
-- **Sophisticated Bots :** The model might struggle against advanced bots designed to mimic human profiles closely or those with very sparse profiles.
+- **Data scope :** The primary limitation is the reliance on limited textual data. Performance could likely be improved by incorporating user metadata (account age, follower/following ratio), behavioral patterns (posting frequency, content type), or network information (connections to known bots/humans), which were not used here.
+- **Tweet availability :** The `node_new.json` file did not consistently contain tweet data for all users, limiting the model's exposure to actual user-generated content beyond the profile.
+- **Sophisticated bots :** The model might struggle against advanced bots designed to mimic human profiles closely or those with very sparse profiles.
 - **Generalization :** Performance on different Twitter datasets or newer bot types may vary. The Twibot-20 dataset has specific characteristics.
-- **Text Cleaning & Tokenization :** Basic cleaning was applied. More advanced NLP techniques (e.g., handling emojis, non-standard characters, language detection) were not implemented. Truncation affects a small percentage (<1%) of very long profiles/tweet combinations.
+- **Text cleaning and tokenization :** Basic cleaning was applied. More advanced NLP techniques (e.g., handling emojis, non-standard characters, language detection) were not implemented. Truncation affects a small percentage (<1%) of very long profiles/tweet combinations.
 
 #### 2.2.4. Conclusion
 - We successfully fine-tuned DistilBERT for Twitter bot detection using profile/tweet text from Twibot-20, achieving 78% accuracy.
@@ -431,7 +431,7 @@ This section outlines the testing procedures and bugs encountered during the dev
 - **Procedure :**
   - Run `scripts/4_predict.py`
   - Check that the model is loaded without errors
-- **Expected Result :** Model should load successfully from the saved directory
+- **Expected result :** Model should load successfully from the saved directory
 
 ##### 3.1.4.2. Prediction quality test
 - **Purpose :** Ensure that the model makes reasonable predictions
@@ -1662,8 +1662,8 @@ This section summarizes the findings from `scripts/benchmark_parquet.py`. For fu
 
 Apache Parquet demonstrates significant storage savings compared to the default Hugging Face disk format :
 
-- **Fixed Dataset :** up to 14.59x smaller (e.g., 16MB HF → 1.1MB Parquet).
-- **Tokenized Dataset :** up to 5.65x smaller (e.g., 10MB HF → 1.8MB Parquet).
+- **Fixed dataset :** up to 14.59x smaller (e.g., 16MB HF → 1.1MB Parquet).
+- **Tokenized dataset :** up to 5.65x smaller (e.g., 10MB HF → 1.8MB Parquet).
 - **Conclusion :** Parquet is highly effective for reducing disk space usage.
 
 ### 7.2. Loading and processing performance
@@ -1674,7 +1674,7 @@ Apache Parquet demonstrates significant storage savings compared to the default 
 
 ### 7.3. When to use each format
 
-- **Hugging Face Disk format :** recommended for small-to-medium datasets, rapid prototyping, and when peak processing speed for common datasets operations is prioritized.
+- **Hugging Face disk format :** recommended for small-to-medium datasets, rapid prototyping, and when peak processing speed for common datasets operations is prioritized.
 - **Apache Parquet format :** recommended for large datasets, scenarios where disk space is limited, long-term archival, and interoperability with other data processing tools (Spark, Pandas, Dask).
 
 ### 7.4. Conclusion
@@ -1724,7 +1724,7 @@ If you use this project or the datasets, please cite the original dataset papers
 }
 ```
 
-### Dataset Repository
+### Dataset repository
 
 The original dataset repositories can be found at :
 - Twibot-20 : https ://github.com/BunsenFeng/TwiBot-20
