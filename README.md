@@ -675,7 +675,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 - **Output :** dataset (DatasetDict) saved to disk (`data/twibot20_fixed_dataset/`) OR in Parquet format (`data/twibot20_fixed_parquet/`).
 
-- #### `load_twibot20_data(data_dir)`
+- ##### `load_twibot20_data(data_dir)`
     - **Description :** loads the Twibot-20 json files (`node_new.json`, `label_new.json`, `split_new.json`) into dictionaries  
     - **Arguments :**  
       - `data_dir` (`str`): path to folder containing the json files  
@@ -902,7 +902,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 - **Output :** a new `DatasetDict` with splits : `train`, `validation`, and `test`.
 
 
-- ### `split_dataset(combined_dataset, test_size=0.1, stratify_by_column='label', random_state=42)`
+- #### `split_dataset(combined_dataset, test_size=0.1, stratify_by_column='label', random_state=42)`
 
   - **Description :** splits the `"train"` split of a `DatasetDict` into new `"train"` and `"validation"` splits, stratified by the given column.
 
@@ -934,7 +934,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 
 
-- ### `load_twibot20_data`
+- #### `load_twibot20_data`
 
     - **Description :** loads the Twibot-20 dataset from JSON files and returns structured dictionaries.
 
@@ -952,7 +952,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 
 
-- ### `extract_text_from_user`
+- #### `extract_text_from_user`
 
     - **Description :** extracts and formats user profile and tweet data into a single string.
 
@@ -968,7 +968,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 
 
-- ### `clean_text`
+- #### `clean_text`
 
     - **Description :** removes URLs and extra whitespaces from the text.
 
@@ -983,7 +983,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 
 
-- ### `convert_to_hf_dataset`
+- #### `convert_to_hf_dataset`
 
     - **Description :** converts dictionaries into a Hugging Face `DatasetDict` with cleaned samples.
 
@@ -1001,7 +1001,7 @@ This section provides a detailed description of inputs, outputs, and key functio
         - logs dataset statistics : sample count, text length, label distribution
 
 
-- ### `main`
+- #### `main`
 
     - **Description :** main function to orchestrate loading, processing, splitting, and saving the dataset.
 
@@ -1024,7 +1024,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 - **Output :** tokenized dataset in Hugging Face or Parquet format
 
 
-- ### `main`
+- #### `main`
 
   - **Description :** main pipeline function that loads the dataset, tokenizes using the Flan-T5 tokenizer, and saves the tokenized output
   - **Arguments :** _None_ (uses `argparse` to parse `--use-parquet`)
@@ -1051,7 +1051,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 
 
-- ### `preprocess_function`
+- #### `preprocess_function`
 
   - **Description :** tokenizes the `text` field in a batch of examples using the T5 tokenizer
   - **Arguments :**
@@ -1086,7 +1086,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 
 
-- ### `compute_metrics`
+- #### `compute_metrics`
 
   - **Description :** computes evaluation metrics (accuracy, precision, recall, F1-score) from the model predictions and true labels during evaluation.
   - **Arguments :**  
@@ -1108,7 +1108,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 
 
-- ### `main`
+- #### `main`
 
   - **Description :** main function that loads data, prepares the tokenizer and model, fine-tunes DistilBERT, evaluates it, and saves the model and training plots.
   - **Arguments :** _None_ (uses argparse to parse the `--use-parquet` flag)
@@ -1136,7 +1136,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 
 
-- ### `predict_bot_probability`
+- #### `predict_bot_probability`
 
   - **Description :** predicts whether a given text input corresponds to a bot or a human using a fine-tuned DistilBERT model.
   - **Arguments :**
@@ -1157,7 +1157,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 
 
-- ### `main`
+- #### `main`
 
   - **Description :** main entry point for the prediction script. Loads the trained DistilBERT model, prepares the tokenizer and device, predicts bot/human labels on a list of predefined sample texts, and launches an interactive prediction loop.
   - **Arguments :** _None_
@@ -1180,7 +1180,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 - **Output :** printed results, benchmark charts (.png), and a Markdown report (`benchmark_results/`)
 
 
-- ### `get_memory_usage`
+- #### `get_memory_usage`
 
   - **Description :** returns the current memory usage of the process in MB
   - **Arguments :** _None_
@@ -1192,7 +1192,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 
 
-- ### `get_directory_size`
+- #### `get_directory_size`
 
   - **Description :** computes the total size of a directory and its contents
   - **Arguments :**  
@@ -1205,7 +1205,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 
 
-- ### `benchmark_loading`
+- #### `benchmark_loading`
 
   - **Description :** benchmarks dataset loading time and memory usage for HF and Parquet formats over multiple runs
   - **Arguments :**
@@ -1224,7 +1224,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 
 
-- ### `benchmark_processing`
+- #### `benchmark_processing`
 
   - **Description :** benchmarks dataset processing (filter, map, sort, select) for HF and Parquet formats
   - **Arguments :**
@@ -1242,7 +1242,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 
 
-- ### `benchmark_tokenized_loading`
+- #### `benchmark_tokenized_loading`
 
   - **Description :** compares loading time for tokenized datasets in HF and Parquet formats
   - **Arguments :**
@@ -1260,7 +1260,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 
 
-- ### `create_comparison_charts`
+- #### `create_comparison_charts`
 
   - **Description :** generates bar charts comparing HF and Parquet on storage, load time, processing, and memory
   - **Arguments :**
@@ -1279,7 +1279,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 
 
-- ### `generate_markdown_report`
+- #### `generate_markdown_report`
 
   - **Description :** writes a Markdown report summarizing benchmark results
   - **Arguments :**
@@ -1298,7 +1298,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 
 
-- ### `main`
+- #### `main`
 
   - **Description :** orchestrates the full benchmarking pipeline (load, process, analyze, report)
   - **Arguments :** _None_
@@ -1322,7 +1322,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 
 
-- ### `convert_json_to_parquet`
+- #### `convert_json_to_parquet`
 
   - **Description :** converts raw Twibot-20 JSON data (nodes, labels, splits, tweets) into compressed Parquet files
   - **Arguments :**  
@@ -1340,7 +1340,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 
 
-- ### `convert_hf_dataset_to_parquet`
+- #### `convert_hf_dataset_to_parquet`
 
   - **Description :** converts a Hugging Face dataset saved with `save_to_disk()` into Parquet format (one file per split)
   - **Arguments :**  
@@ -1355,7 +1355,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 
 
-- ### `load_parquet_as_hf_dataset`
+- #### `load_parquet_as_hf_dataset`
 
   - **Description :** loads a dataset from a Parquet directory into a Hugging Face `DatasetDict`
   - **Arguments :**  
@@ -1368,7 +1368,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 
 
-- ### `main`
+- #### `main`
 
   - **Description :** main entry point to convert raw JSON and Hugging Face datasets into Parquet format
   - **Arguments :** _None_
@@ -1391,7 +1391,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 
 
-- ### `save_dataset_to_parquet`
+- #### `save_dataset_to_parquet`
 
   - **Description :** saves a Hugging Face `Dataset` or `DatasetDict` to Parquet format using PyArrow
   - **Arguments :**
@@ -1407,7 +1407,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 
 
-- ### `load_parquet_as_dataset`
+- #### `load_parquet_as_dataset`
 
   - **Description :** loads a Parquet file or directory into a Hugging Face `Dataset` or `DatasetDict`
   - **Arguments :**
@@ -1425,7 +1425,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 
 
-- ### `convert_dataset_to_parquet`
+- #### `convert_dataset_to_parquet`
 
   - **Description :** converts a Hugging Face dataset (saved with `.save_to_disk`) into Parquet format
   - **Arguments :**
@@ -1438,7 +1438,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 
 
-- ### `get_parquet_schema`
+- #### `get_parquet_schema`
 
   - **Description :** returns the PyArrow schema of a `.parquet` file
   - **Arguments :**
@@ -1447,7 +1447,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 
 
-- ### `get_parquet_metadata`
+- #### `get_parquet_metadata`
 
   - **Description :** retrieves metadata from a `.parquet` file
   - **Arguments :**
@@ -1459,9 +1459,8 @@ This section provides a detailed description of inputs, outputs, and key functio
     - `'file_size_mb'`
     - `'columns'` (list of column names)
 
----
 
-- ### `read_parquet_sample`
+- #### `read_parquet_sample`
 
   - **Description :** reads a small number of rows from a `.parquet` file
   - **Arguments :**
@@ -1470,7 +1469,7 @@ This section provides a detailed description of inputs, outputs, and key functio
   - **Returns :** `pandas.DataFrame` – preview of the dataset content
 
 
-- ### `split_dataset`
+- #### `split_dataset`
 
   - **Description :** splits a Hugging Face `DatasetDict` with "train" and "test" into "train", "validation", and "test" using stratified sampling on the training data
   - **Arguments :**
