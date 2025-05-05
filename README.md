@@ -661,7 +661,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 ### 5.1. `scripts/1_fix_dataset.py`
 
-- **Functionality:** loads raw JSON data, extracts and cleans profile/tweet text, creates a DatasetDict with columns user_id, text, features (JSON string of the node), label (0/1), performs train/validation split, and saves the processed dataset.
+- **Functionality :** loads raw JSON data, extracts and cleans profile/tweet text, creates a DatasetDict with columns user_id, text, features (JSON string of the node), label (0/1), performs train/validation split, and saves the processed dataset.
 
 - **Key Functions:** `load_twibot20_data()`, `extract_text_from_user()`, `clean_text()`, `convert_to_hf_dataset()`, `main()`.
 
@@ -721,7 +721,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 ### 5.2. `scripts/2_tokenize_dataset.py`
 
-- **Functionality:** loads the processed dataset (HF or Parquet), applies DistilBERT tokenization, and saves the resulting dataset.
+- **Functionality :** loads the processed dataset (HF or Parquet), applies DistilBERT tokenization, and saves the resulting dataset.
 
 - **Key Functions:** `preprocess_function()`, `main()`.
 
@@ -758,7 +758,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 ### 5.3. `scripts/3_train_model.py`
 
-- **Functionality:** loads the tokenized dataset (HF or Parquet), configures and fine-tunes the DistilBERT model, evaluates and saves the model.
+- **Functionality :** loads the tokenized dataset (HF or Parquet), configures and fine-tunes the DistilBERT model, evaluates and saves the model.
 
 - **Key Functions:** `compute_metrics()`, `main()`.
 
@@ -798,7 +798,7 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 ### 5.4. `scripts/4_predict.py`
 
-- **Functionality:** loads the fine-tuned model for interactive predictions.
+- **Functionality :** loads the fine-tuned model for interactive predictions.
 
 - **Key Functions:** `predict_bot_probability()`, `main()`.
 
@@ -918,29 +918,29 @@ This section provides a detailed description of inputs, outputs, and key functio
     - the function prints the size of each final split to the console.
 
 ### 5.7 `scripts/1_fix_dataset.py`
-- **Functionality**: loads, cleans, and restructures the raw Twibot-20 dataset into a usable format for training, saving the result in both Hugging Face and Parquet formats.
+- **Functionality :** loads, cleans, and restructures the raw Twibot-20 dataset into a usable format for training, saving the result in both Hugging Face and Parquet formats.
 
 - **Key Functions**: `load_twibot20_data`, `extract_text_from_user`, `clean_text`, `convert_to_hf_dataset`, `main`
 
-- **Input**: directory path to the Twibot-20 dataset files (`data/Twibot-20/`)
+- **Input :** directory path to the Twibot-20 dataset files (`data/Twibot-20/`)
 
-- **Output**: processed dataset saved to `data/twibot20_fixed_dataset/` (Hugging Face) and `data/twibot20_fixed_parquet/` (Parquet), with metadata in `dataset_info.json`
+- **Output :** processed dataset saved to `data/twibot20_fixed_dataset/` (Hugging Face) and `data/twibot20_fixed_parquet/` (Parquet), with metadata in `dataset_info.json`
 
 
 
 - ### `load_twibot20_data`
 
-    - **Description**: loads the Twibot-20 dataset from JSON files and returns structured dictionaries.
+    - **Description :** loads the Twibot-20 dataset from JSON files and returns structured dictionaries.
 
-    - **Arguments**:
+    - **Arguments :**
         - `data_dir` (str): path to the folder containing `node_new.json`, `label_new.json`, and `split_new.json`
 
-    - **Returns**: tuple `(nodes, labels, splits)`
+    - **Returns :** tuple `(nodes, labels, splits)`
         - `nodes` (dict): user metadata
         - `labels` (dict): user label mapping (`bot` or `human`)
         - `splits` (dict): split definitions for `train`, `test`, `dev`
 
-    - **Details**:
+    - **Details :**
         - removes any potential CSV-style header from the labels file
         - logs the number of entries for each component
 
@@ -948,14 +948,14 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 - ### `extract_text_from_user`
 
-    - **Description**: extracts and formats user profile and tweet data into a single string.
+    - **Description :** extracts and formats user profile and tweet data into a single string.
 
-    - **Arguments**:
+    - **Arguments :**
         - `user_data` (dict): metadata of a user from `node_new.json`
 
-    - **Returns**: `str`: concatenated, formatted string of user profile and up to 5 tweets
+    - **Returns :** `str`: concatenated, formatted string of user profile and up to 5 tweets
 
-    - **Details**:
+    - **Details :**
         - includes `username`, `name`, `description`, `location`, and up to 5 tweets
         - skips empty or missing fields
         - each tweet is prefixed (e.g., "Tweet 1:")
@@ -964,14 +964,14 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 - ### `clean_text`
 
-    - **Description**: removes URLs and extra whitespaces from the text.
+    - **Description :** removes URLs and extra whitespaces from the text.
 
-    - **Arguments**:
+    - **Arguments :**
         - `text` (str): raw text input
 
-    - **Returns**: `str`: cleaned version of the text
+    - **Returns :** `str`: cleaned version of the text
 
-    - **Details**:
+    - **Details :**
         - uses regex to remove `http(s)` URLs
         - collapses whitespace and trims
 
@@ -979,16 +979,16 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 - ### `convert_to_hf_dataset`
 
-    - **Description**: converts dictionaries into a Hugging Face `DatasetDict` with cleaned samples.
+    - **Description :** converts dictionaries into a Hugging Face `DatasetDict` with cleaned samples.
 
-    - **Arguments**:
+    - **Arguments :**
         - `nodes` (dict): user metadata
         - `labels` (dict): label mapping
         - `splits` (dict): train/test split info
 
-    - **Returns**: `DatasetDict` with `train` and `test` splits
+    - **Returns :** `DatasetDict` with `train` and `test` splits
 
-    - **Details**:
+    - **Details :**
         - uses `extract_text_from_user` + `clean_text` per user
         - serializes raw metadata as JSON
         - defines explicit schema using `datasets.Features`
@@ -997,13 +997,13 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 - ### `main`
 
-    - **Description**: main function to orchestrate loading, processing, splitting, and saving the dataset.
+    - **Description :** main function to orchestrate loading, processing, splitting, and saving the dataset.
 
-    - **Arguments**: _None_
+    - **Arguments :** _None_
 
-    - **Returns**: _None_
+    - **Returns :** _None_
 
-    - **Details**:
+    - **Details :**
         - loads the data via `load_twibot20_data`
         - creates dataset with `convert_to_hf_dataset`
         - splits train/validation via `split_dataset` (stratified)
@@ -1013,32 +1013,90 @@ This section provides a detailed description of inputs, outputs, and key functio
         - logs dataset structure to `dataset_info.json`
       
 ### 5.8 `scripts/2_tokenize_dataset.py`
+- **Functionality :** loads a fixed Twibot-20 dataset, tokenizes it using the T5 tokenizer (substitute for LLaMA), and saves the result to disk.
+- **Input :** fixed dataset in Hugging Face or Parquet format
+- **Output :** tokenized dataset in Hugging Face or Parquet format
 
+
+- ### `main`
+
+  - **Description :** main pipeline function that loads the dataset, tokenizes using the Flan-T5 tokenizer, and saves the tokenized output
+  - **Arguments :** _None_ (uses `argparse` to parse `--use-parquet`)
+  - **Returns :** _None_
+  - **Details :**
+    - loads dataset using `load_from_disk()` or `load_parquet_as_dataset()`
+    - prints text and label statistics
+    - loads `google/flan-t5-base` tokenizer
+    - tokenizes dataset via `map(preprocess_function, batched=True)`
+    - prints tokenized statistics and example
+    - saves tokenized dataset to disk (`save_to_disk()` or `save_dataset_to_parquet()`)
+  - **Data format :**
+    - **Input :**
+      - Hugging Face format: `../data/twibot20_fixed_dataset`
+      - Parquet format: `../data/twibot20_fixed_parquet`
+    - **Output :**
+      - Hugging Face: `../data/twibot20_fixed_tokenized`
+      - Parquet: `../data/twibot20_tokenized_parquet`
+    - Each split contains:
+      - `input_ids: List[int]`
+      - `attention_mask: List[int]`
+      - `label: int`
+      - `user_id: str` (optional)
+
+
+
+- ### `preprocess_function`
+
+  - **Description :** tokenizes the `text` field in a batch of examples using the T5 tokenizer
+  - **Arguments :**
+    - `examples (dict)`: dictionary with key `"text"` containing a list of strings
+  - **Returns :**
+    - `dict`: with keys:
+      - `input_ids`: list of token ID sequences
+      - `attention_mask`: corresponding masks
+  - **Details :**
+    - truncates to `tokenizer.model_max_length`
+    - no padding (assumed to be handled later during training)
+    - used with `dataset.map(..., batched=True)`
+    - **Data format :**
+    - **Input**:
+      ```json
+      {
+        "text": ["example 1", "example 2", ...]
+      }
+      ```
+    - **Output :**
+      ```json
+      {
+        "input_ids": [[101, ...], [101, ...], ...],
+        "attention_mask": [[1, 1, ...], [1, 1, ...], ...]
+      }
+      ```
 ### 5.9 `scripts/3_train_model.py`
-- **Functionality**: fine-tunes a DistilBERT model on the tokenized Twibot-20 dataset for binary classification (bot vs human).
+- **Functionality :** fine-tunes a DistilBERT model on the tokenized Twibot-20 dataset for binary classification (bot vs human).
 - **Key Functions**: `compute_metrics`, `main`
-- **Input**: tokenized dataset (Hugging Face or Parquet format)
-- **Output**: trained model (`models/distilbert-bot-detector/`), evaluation results (printed), training curves (`training_curves.png`)
+- **Input :** tokenized dataset (Hugging Face or Parquet format)
+- **Output :** trained model (`models/distilbert-bot-detector/`), evaluation results (printed), training curves (`training_curves.png`)
 
 
 
 - ### `compute_metrics`
 
-  - **Description**: computes evaluation metrics (accuracy, precision, recall, F1-score) from the model predictions and true labels during evaluation.
-  - **Arguments**:  
+  - **Description :** computes evaluation metrics (accuracy, precision, recall, F1-score) from the model predictions and true labels during evaluation.
+  - **Arguments :**  
     - `eval_pred (tuple)`: a tuple of (logits, labels) as returned by the Trainer during evaluation
-  - **Returns**:  
+  - **Returns :**  
     - `dict`:  
       - `accuracy (float)`: accuracy score  
       - `precision (float)`: weighted precision  
       - `recall (float)`: weighted recall  
       - `f1 (float)`: weighted F1-score  
-  - **Details**:  
+  - **Details :**  
     - uses `np.argmax` on logits to get predicted classes  
     - computes precision, recall, and F1 using `sklearn.metrics.precision_recall_fscore_support`  
     - computes accuracy using `sklearn.metrics.accuracy_score`  
     - all metrics use `average='weighted'` to handle class imbalance  
-  - **Data Format**:  
+  - **Data format :**  
     - input: `(np.ndarray logits, np.ndarray labels)`  
     - output: `dict` with evaluation metrics
 
@@ -1046,10 +1104,10 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 - ### `main`
 
-  - **Description**: main function that loads data, prepares the tokenizer and model, fine-tunes DistilBERT, evaluates it, and saves the model and training plots.
-  - **Arguments**: _None_ (uses argparse to parse the `--use-parquet` flag)
-  - **Returns**: _None_
-  - **Details**:  
+  - **Description :** main function that loads data, prepares the tokenizer and model, fine-tunes DistilBERT, evaluates it, and saves the model and training plots.
+  - **Arguments :** _None_ (uses argparse to parse the `--use-parquet` flag)
+  - **Returns :** _None_
+  - **Details :**  
     - parses `--use-parquet` to choose dataset format  
     - loads dataset with `load_from_disk()` or `load_parquet_as_dataset()`  
     - loads the tokenizer and model (`distilbert-base-uncased`)  
@@ -1057,7 +1115,7 @@ This section provides a detailed description of inputs, outputs, and key functio
     - uses `Trainer` to train on `train`, validate on `validation`, evaluate on `test`  
     - saves model to `models/distilbert-bot-detector/`  
     - generates and saves training curves (`training_curves.png`)  
-  - **Data Format**:  
+  - **Data format :**  
     - input: tokenized `DatasetDict` with `train`, `validation`, and `test` splits  
     - output:  
       - model saved to `models/distilbert-bot-detector/`  
@@ -1065,26 +1123,26 @@ This section provides a detailed description of inputs, outputs, and key functio
       - metrics printed to console
 
 ### 5.10 `scripts/4_predict.py`
-- **Functionality**: loads a fine-tuned DistilBERT model and performs inference on user input or predefined texts to classify them as bot or human.
+- **Functionality :** loads a fine-tuned DistilBERT model and performs inference on user input or predefined texts to classify them as bot or human.
 - **Key Functions**: `predict_bot_probability`, `main`
-- **Input**: raw string text entered by user or predefined in code
-- **Output**: prediction label (`Bot` or `Human`) with confidence score printed to console
+- **Input :** raw string text entered by user or predefined in code
+- **Output :** prediction label (`Bot` or `Human`) with confidence score printed to console
 
 
 
 - ### `predict_bot_probability`
 
-  - **Description**: predicts whether a given text input corresponds to a bot or a human using a fine-tuned DistilBERT model.
-  - **Arguments**:
+  - **Description :** predicts whether a given text input corresponds to a bot or a human using a fine-tuned DistilBERT model.
+  - **Arguments :**
     - `text (str)`: the input text to classify
     - `model (PreTrainedModel)`: the fine-tuned Hugging Face DistilBERT model for sequence classification
     - `tokenizer (PreTrainedTokenizer)`: the tokenizer corresponding to the model
     - `device (torch.device)`: the device (cpu, cuda, or mps) on which to run inference
-  - **Returns**:
+  - **Returns :**
     - `tuple`:
       - `prediction (int)`: 1 if predicted as bot, 0 if human
       - `probability (float)`: softmax confidence score of the predicted class
-  - **Details**:
+  - **Details :**
     - tokenizes the input with truncation and padding
     - moves tensors to the target device
     - performs inference using `torch.no_grad()`
@@ -1095,34 +1153,34 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 - ### `main`
 
-  - **Description**: main entry point for the prediction script. Loads the trained DistilBERT model, prepares the tokenizer and device, predicts bot/human labels on a list of predefined sample texts, and launches an interactive prediction loop.
-  - **Arguments**: _None_
-  - **Returns**: _None_
-  - **Details**:
+  - **Description :** main entry point for the prediction script. Loads the trained DistilBERT model, prepares the tokenizer and device, predicts bot/human labels on a list of predefined sample texts, and launches an interactive prediction loop.
+  - **Arguments :** _None_
+  - **Returns :** _None_
+  - **Details :**
     - loads the trained model from `models/distilbert-bot-detector/`
     - detects the best available device (MPS, CUDA, or CPU) and transfers the model there
     - runs predictions on a predefined list of sample texts
     - enters a loop where user can input text and receive predictions
     - each prediction includes a confidence score from the softmax output
-  - **Data Format**:
+  - **Data format :**
     - input: user-provided string (via CLI)
     - output: printed label `Bot` or `Human` with associated probability
 
 ### 5.11. `scripts/benchmark_parquet.py`
 
-- **Functionality**: compares the performance (load time, memory, processing time, storage) of datasets saved in Hugging Face and Apache Parquet formats.
+- **Functionality :** compares the performance (load time, memory, processing time, storage) of datasets saved in Hugging Face and Apache Parquet formats.
 - **Key Functions**: `get_memory_usage`, `get_directory_size`, `benchmark_loading`, `benchmark_processing`, `benchmark_tokenized_loading`, `create_comparison_charts`, `generate_markdown_report`, `main`
-- **Input**: paths to datasets in both Hugging Face and Parquet formats
-- **Output**: printed results, benchmark charts (.png), and a Markdown report (`benchmark_results/`)
+- **Input :** paths to datasets in both Hugging Face and Parquet formats
+- **Output :** printed results, benchmark charts (.png), and a Markdown report (`benchmark_results/`)
 
 
 - ### `get_memory_usage`
 
-  - **Description**: returns the current memory usage of the process in MB
-  - **Arguments**: _None_
-  - **Returns**:  
+  - **Description :** returns the current memory usage of the process in MB
+  - **Arguments :** _None_
+  - **Returns :**  
     - `float`: memory usage in MB
-  - **Details**:  
+  - **Details :**  
     - uses `psutil` to get memory usage of current process via RSS (resident set size)  
     - converts bytes to megabytes for readability
 
@@ -1130,12 +1188,12 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 - ### `get_directory_size`
 
-  - **Description**: computes the total size of a directory and its contents
-  - **Arguments**:  
+  - **Description :** computes the total size of a directory and its contents
+  - **Arguments :**  
     - `path (str)`: path to the directory to measure
-  - **Returns**:  
+  - **Returns :**  
     - `float`: total size in MB
-  - **Details**:  
+  - **Details :**  
     - recursively walks through directory and sums file sizes  
     - converts bytes to MB
 
@@ -1143,17 +1201,17 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 - ### `benchmark_loading`
 
-  - **Description**: benchmarks dataset loading time and memory usage for HF and Parquet formats over multiple runs
-  - **Arguments**:
+  - **Description :** benchmarks dataset loading time and memory usage for HF and Parquet formats over multiple runs
+  - **Arguments :**
     - `hf_path (str)`: path to the Hugging Face dataset
     - `parquet_path (str)`: path to the Parquet dataset
     - `num_runs (int)`: number of repetitions (default: 5)
-  - **Returns**:  
+  - **Returns :**  
     - `dict`:
       - `hf_load_time`, `hf_load_std`
       - `parquet_load_time`, `parquet_load_std`
       - `hf_memory`, `parquet_memory`
-  - **Details**:  
+  - **Details :**  
     - loads datasets multiple times, measures time and memory  
     - uses `gc.collect()` between runs to clean memory  
     - returns average and std dev of metrics
@@ -1162,16 +1220,16 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 - ### `benchmark_processing`
 
-  - **Description**: benchmarks dataset processing (filter, map, sort, select) for HF and Parquet formats
-  - **Arguments**:
+  - **Description :** benchmarks dataset processing (filter, map, sort, select) for HF and Parquet formats
+  - **Arguments :**
     - `hf_path (str)`: Hugging Face dataset path
     - `parquet_path (str)`: Parquet dataset path
     - `num_runs (int)`: number of runs (default: 3)
-  - **Returns**:  
+  - **Returns :**  
     - `dict`:
       - `hf_process_time`, `hf_process_std`
       - `parquet_process_time`, `parquet_process_std`
-  - **Details**:  
+  - **Details :**  
     - filters train split for label == 1  
     - computes text length, sorts by it, selects top 100  
     - repeated for both formats and times averaged
@@ -1180,16 +1238,16 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 - ### `benchmark_tokenized_loading`
 
-  - **Description**: compares loading time for tokenized datasets in HF and Parquet formats
-  - **Arguments**:
+  - **Description :** compares loading time for tokenized datasets in HF and Parquet formats
+  - **Arguments :**
     - `hf_path (str)`: path to HF tokenized dataset
     - `parquet_path (str)`: path to Parquet tokenized dataset
     - `num_runs (int)`: number of repetitions (default: 3)
-  - **Returns**:  
+  - **Returns :**  
     - `dict`:
       - `hf_tokenized_load_time`, `hf_tokenized_load_std`
       - `parquet_tokenized_load_time`, `parquet_tokenized_load_std`
-  - **Details**:  
+  - **Details :**  
     - loads tokenized datasets using respective format loaders  
     - measures and averages time per format  
     - clears memory between runs
@@ -1198,13 +1256,13 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 - ### `create_comparison_charts`
 
-  - **Description**: generates bar charts comparing HF and Parquet on storage, load time, processing, and memory
-  - **Arguments**:
+  - **Description :** generates bar charts comparing HF and Parquet on storage, load time, processing, and memory
+  - **Arguments :**
     - `results (dict)`: benchmark metrics (e.g. size, time, memory)
     - `output_dir (str)`: directory to save PNG charts
-  - **Returns**:  
+  - **Returns :**  
     - `bool`: `True` if all charts are created and saved
-  - **Details**:  
+  - **Details :**  
     - generates 4 charts:
       - `storage_comparison.png`
       - `loading_comparison.png`
@@ -1217,13 +1275,13 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 - ### `generate_markdown_report`
 
-  - **Description**: writes a Markdown report summarizing benchmark results
-  - **Arguments**:
+  - **Description :** writes a Markdown report summarizing benchmark results
+  - **Arguments :**
     - `results (dict)`: benchmark metrics
     - `output_file (str)`: path to save the Markdown file
-  - **Returns**:  
+  - **Returns :**  
     - `bool`: `True` if report is successfully written
-  - **Details**:  
+  - **Details :**  
     - creates 5 sections:
       - storage efficiency
       - loading time
@@ -1236,10 +1294,10 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 - ### `main`
 
-  - **Description**: orchestrates the full benchmarking pipeline (load, process, analyze, report)
-  - **Arguments**: _None_
-  - **Returns**: _None_
-  - **Details**:
+  - **Description :** orchestrates the full benchmarking pipeline (load, process, analyze, report)
+  - **Arguments :** _None_
+  - **Returns :** _None_
+  - **Details :**
     - sets dataset and result paths
     - validates required folders
     - measures directory size using `get_directory_size`
@@ -1251,22 +1309,22 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 ### 5.12. `scripts/convert_to_parquet.py`
 
-- **Functionality**: converts datasets from Hugging Face or raw JSON format to Apache Parquet format.
+- **Functionality :** converts datasets from Hugging Face or raw JSON format to Apache Parquet format.
 - **Key Functions**: `convert_json_to_parquet`, `convert_hf_dataset_to_parquet`, `load_parquet_as_hf_dataset`, `main`
-- **Arguments**: `--input_dir`, `--output_dir`
+- **Arguments :** `--input_dir`, `--output_dir`
 - **Usage**: manual format conversion utility
 
 
 
 - ### `convert_json_to_parquet`
 
-  - **Description**: converts raw Twibot-20 JSON data (nodes, labels, splits, tweets) into compressed Parquet files
-  - **Arguments**:  
+  - **Description :** converts raw Twibot-20 JSON data (nodes, labels, splits, tweets) into compressed Parquet files
+  - **Arguments :**  
     - `input_path (str)`: path to directory containing `node_new.json`, `label_new.json`, `split_new.json`, and tweet files  
     - `output_path (str)`: destination directory to save `.parquet` files
-  - **Returns**:  
+  - **Returns :**  
     - `bool`: `True` if successful, `False` otherwise
-  - **Details**:  
+  - **Details :**  
     - creates the following Parquet files:
       - `nodes.parquet`: user metadata  
       - `labels.parquet`: user ID → binary label (0 = human, 1 = bot)  
@@ -1278,13 +1336,13 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 - ### `convert_hf_dataset_to_parquet`
 
-  - **Description**: converts a Hugging Face dataset saved with `save_to_disk()` into Parquet format (one file per split)
-  - **Arguments**:  
+  - **Description :** converts a Hugging Face dataset saved with `save_to_disk()` into Parquet format (one file per split)
+  - **Arguments :**  
     - `input_path (str)`: path to Hugging Face disk dataset  
     - `output_path (str)`: destination directory for Parquet files
-  - **Returns**:  
+  - **Returns :**  
     - `bool`: `True` if conversion succeeded, `False` otherwise
-  - **Details**:  
+  - **Details :**  
     - iterates over splits in the dataset  
     - saves each split as `<split_name>.parquet` using PyArrow  
     - uses snappy compression by default
@@ -1293,12 +1351,12 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 - ### `load_parquet_as_hf_dataset`
 
-  - **Description**: loads a dataset from a Parquet directory into a Hugging Face `DatasetDict`
-  - **Arguments**:  
+  - **Description :** loads a dataset from a Parquet directory into a Hugging Face `DatasetDict`
+  - **Arguments :**  
     - `parquet_path (str)`: path to directory containing `.parquet` files (e.g. `train.parquet`, `test.parquet`)
-  - **Returns**:  
+  - **Returns :**  
     - `DatasetDict`: reconstructed dataset with one dataset per split
-  - **Details**:  
+  - **Details :**  
     - ignores files like `nodes.parquet`, `labels.parquet`, `splits.parquet`  
     - only loads standard dataset splits (e.g., train/test/validation)
 
@@ -1306,10 +1364,10 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 - ### `main`
 
-  - **Description**: main entry point to convert raw JSON and Hugging Face datasets into Parquet format
-  - **Arguments**: _None_
-  - **Returns**: _None_
-  - **Details**:
+  - **Description :** main entry point to convert raw JSON and Hugging Face datasets into Parquet format
+  - **Arguments :** _None_
+  - **Returns :** _None_
+  - **Details :**
     - converts:
       - Twibot-20 raw JSON → Parquet
       - fixed Hugging Face dataset → Parquet
@@ -1322,16 +1380,114 @@ This section provides a detailed description of inputs, outputs, and key functio
 
 
 ### 5.13. `utilities/dataset_splitter.py`
+- **Functionality :** utility module for saving and loading Hugging Face datasets in Parquet format.
+- **API :** `save_dataset_to_parquet(dataset_dict, output_dir)`, `load_parquet_as_dataset(input_dir) -> DatasetDict`
 
-- **Functionality:** utility module for stratified splitting of a Hugging Face dataset.
 
-- **API:** `split_dataset(combined_dataset, test_size=0.1, stratify_by_column='label', random_state=42) -> DatasetDict`.
+
+- ### `save_dataset_to_parquet`
+
+  - **Description :** saves a Hugging Face `Dataset` or `DatasetDict` to Parquet format using PyArrow
+  - **Arguments :**
+    - `dataset (Dataset or DatasetDict)`: the dataset to save
+    - `output_dir (str)`: directory where Parquet files will be written
+    - `compression (str, default='snappy')`: compression codec (e.g. `'snappy'`, `'gzip'`, `'brotli'`)
+  - **Returns :** `bool` – `True` if successful, `False` otherwise
+  - **Details :**
+    - saves each dataset split (or the entire dataset) as `.parquet` using pandas and pyarrow
+  - **Data format :**
+    - **Input :** Hugging Face dataset object (from `datasets` lib)
+    - **Output :** `.parquet` files saved in the target directory
+
+
+
+- ### `load_parquet_as_dataset`
+
+  - **Description :** loads a Parquet file or directory into a Hugging Face `Dataset` or `DatasetDict`
+  - **Arguments :**
+    - `parquet_path (str)`: path to the `.parquet` file or directory
+    - `split_name (str, optional)`: name of a specific split to load (e.g. `'train'`), or `None` to load all
+  - **Returns :** `Dataset` or `DatasetDict` – the loaded dataset
+  - **Details :**
+    - detects column types automatically:
+      - integer label → `ClassLabel(num_classes=2, names=['human', 'bot'])`
+      - token columns like `input_ids`, `attention_mask` → `Sequence(int32)`
+      - all others inferred as string
+  - **Data format :**
+    - **Input :** `.parquet` files with features (text, labels, etc.)
+    - **Output :** Hugging Face dataset with feature schema
+
+
+
+- ### `convert_dataset_to_parquet`
+
+  - **Description :** converts a Hugging Face dataset (saved with `.save_to_disk`) into Parquet format
+  - **Arguments :**
+    - `input_path (str)`: path to the Hugging Face disk dataset
+    - `output_path (str)`: directory to write Parquet files
+    - `compression (str, default='snappy')`: compression codec
+  - **Returns :** `bool` – whether the operation was successful
+  - **Details :**
+    - internally uses: `load_from_disk()` → `save_dataset_to_parquet(...)`
+
+
+
+- ### `get_parquet_schema`
+
+  - **Description :** returns the PyArrow schema of a `.parquet` file
+  - **Arguments :**
+    - `parquet_path (str)`: path to the `.parquet` file
+  - **Returns :** `pyarrow.Schema` – schema including column names and types
+
+
+
+- ### `get_parquet_metadata`
+
+  - **Description :** retrieves metadata from a `.parquet` file
+  - **Arguments :**
+    - `parquet_path (str)`: path to the file
+  - **Returns :** `dict` – with keys:
+    - `'num_rows'`
+    - `'num_row_groups'`
+    - `'schema'` (stringified)
+    - `'file_size_mb'`
+    - `'columns'` (list of column names)
+
+---
+
+- ### `read_parquet_sample`
+
+  - **Description :** reads a small number of rows from a `.parquet` file
+  - **Arguments :**
+    - `parquet_path (str)`: path to the file
+    - `num_rows (int, default=5)`: number of rows to read
+  - **Returns :** `pandas.DataFrame` – preview of the dataset content
+
+
+- ### `split_dataset`
+
+  - **Description :** splits a Hugging Face `DatasetDict` with "train" and "test" into "train", "validation", and "test" using stratified sampling on the training data
+  - **Arguments :**
+    - `combined_dataset (DatasetDict)`: a Hugging Face dataset dictionary that must contain "train" and "test" splits
+    - `test_size (float, default=0.1)`: proportion of the original train split to use as validation
+    - `stratify_by_column (str, default='label')`: name of the column used for stratification
+    - `random_state (int, default=42)`: random seed for reproducibility
+  - **Returns :**
+    - `DatasetDict`: dictionary with the following keys:
+      - `'train'`: new training subset (after split)
+      - `'validation'`: stratified validation subset
+      - `'test'`: unchanged original test split
+  - **Details :**
+    - if `stratify_by_column` is of type `ClassLabel`, uses Hugging Face’s `.train_test_split()` directly
+    - otherwise, uses `sklearn.model_selection.train_test_split()` with indices and stratified labels
+    - subsets are created using `.select()` with the computed indices
+    - logs the size of each resulting split to the console
 
 ### 5.14. `utilities/parquet_utils.py`
 
-- **Functionality:** utility module for saving and loading Hugging Face datasets in Parquet format.
+- **Functionality :** utility module for saving and loading Hugging Face datasets in Parquet format.
 
-- **API:** `save_dataset_to_parquet(dataset_dict, output_dir)`, `load_parquet_as_dataset(input_dir) -> DatasetDict`.
+- **API :** `save_dataset_to_parquet(dataset_dict, output_dir)`, `load_parquet_as_dataset(input_dir) -> DatasetDict`.
 
 ## 6. Data processing workflow details
 
