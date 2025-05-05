@@ -218,11 +218,11 @@ Each step (`1`, `2`, `3`) supports using either the standard Hugging Face datase
 #### 1.4.1 Source files
 - **Location :** expected in `data/Twibot-20/`
 - **Files used :**
-    - `node_new.json`: contains user profile information and potentially tweets. Structure : Dict mapping `user_id` (str) to user data (dict).
+    - `node_new.json`: contains user profile information and potentially tweets. Structure : dict mapping `user_id` (str) to user data (dict).
         ```json
         { "u17461978": { "description": "...", "name": "SHAQ", ... }, ... }
         ```
-    - `label_new.json`: Maps `user_id` (str) to label ('human' or 'bot').
+    - `label_new.json`: maps `user_id` (str) to label ('human' or 'bot').
         ```json
         { "u17461978": "human", "u1297437077403885568": "bot", ... }
         ```
@@ -262,7 +262,7 @@ The pipeline generates processed and tokenized datasets, which can be stored in 
     - `user_id` (`string`): user identifier.
     - `text` (`string`): the combined, cleaned text from profile and tweets.
     - `features` (`string`): JSON string of the raw node data (for potential future use).
-    - `label` (`ClassLabel(names=['human', 'bot'])`): Integer label (0 or 1).
+    - `label` (`ClassLabel(names=['human', 'bot'])`): integer label (0 or 1).
     - `input_ids` (`Sequence(int32)`): *(Added after tokenization)* List of token IDs.
     - `attention_mask` (`Sequence(int8)`): *(Added after tokenization)* Mask indicating real tokens vs padding.
 
@@ -605,16 +605,16 @@ This section outlines the testing procedures and bugs encountered during the dev
 Execute the scripts sequentially :
 
 ```bash
-# Step 1 : Process the raw data
+# Step 1 : process the raw data
 python scripts/1_fix_dataset.py
 
-# Step 2 : Tokenize the processed dataset
+# Step 2 : tokenize the processed dataset
 python scripts/2_tokenize_dataset.py
 
-# Step 3 : Train the model
+# Step 3 : train the model
 python scripts/3_train_model.py
 
-# Step 4 : Make predictions with the trained model
+# Step 4 : make predictions with the trained model
 python scripts/4_predict.py # For interactive prediction
 ```
 
@@ -625,16 +625,16 @@ This will generate datasets in `data/twibot20_fixed_dataset/` and `data/twibot20
 Use the `--use-parquet` flag for the processing and training steps :
 
 ```bash
-# Step 1 : Process the raw data using Parquet format
+# Step 1 : process the raw data using Parquet format
 python scripts/1_fix_dataset.py --use-parquet
 
-# Step 2 : Tokenize the processed dataset using Parquet format
+# Step 2 : tokenize the processed dataset using Parquet format
 python scripts/2_tokenize_dataset.py --use-parquet
 
-# Step 3 : Train the model using Parquet format
+# Step 3 : train the model using Parquet format
 python scripts/3_train_model.py --use-parquet
 
-# Step 4 : Make predictions with the trained model
+# Step 4 : make predictions with the trained model
 python scripts/4_predict.py # Prediction script uses the saved model regardless of training data format
 ```
 
@@ -1044,8 +1044,8 @@ This section provides a detailed description of inputs, outputs, and key functio
       - Hugging Face : `../data/twibot20_fixed_tokenized`
       - Parquet : `../data/twibot20_tokenized_parquet`
     - Each split contains :
-      - `input_ids : List[int]`
-      - `attention_mask : List[int]`
+      - `input_ids : list[int]`
+      - `attention_mask : list[int]`
       - `label : int`
       - `user_id : str` (optional)
 
@@ -1510,7 +1510,7 @@ This section details the sequence of operations transforming raw data into model
 
 **Key functions :**
 - `load_twibot20_data(data_dir)`: loads and parses the three JSON files into Python dictionaries
-- `json.load(file)`: Built-in JSON parser used to convert JSON files to Python dictionaries
+- `json.load(file)`: built-in JSON parser used to convert JSON files to Python dictionaries
 - `check_data_integrity(nodes, labels, splits)`: verifies that the loaded data is consistent and complete
 - `print_dataset_stats(nodes, labels, splits)`: outputs statistics about the dataset for verification
 
@@ -1551,10 +1551,10 @@ This section details the sequence of operations transforming raw data into model
 - Cleaned text for each user, labels dictionary, splits dictionary
 
 **Key functions :**
-- `convert_to_hf_dataset(user_texts, labels, splits)`: Creates a Hugging Face DatasetDict
-- `Features(...)`: Defines the schema with explicit typing for each column
-- `Dataset.from_dict(...)`: Creates a Dataset from a dictionary of lists
-- `DatasetDict(...)`: Creates a dictionary of datasets for different splits
+- `convert_to_hf_dataset(user_texts, labels, splits)`: creates a Hugging Face DatasetDict
+- `Features(...)`: defines the schema with explicit typing for each column
+- `Dataset.from_dict(...)`: creates a Dataset from a dictionary of lists
+- `DatasetDict(...)`: creates a dictionary of datasets for different splits
 
 **Process flow :**
 1. `convert_to_hf_dataset()` organizes the data into dictionaries for each split
@@ -1562,10 +1562,10 @@ This section details the sequence of operations transforming raw data into model
 3. Features are explicitly typed using :
    ```python
    features = Features({
-       'user_id': Value('string'),
-       'text': Value('string'),
-       'features': Value('string'),  # JSON string of raw node data
-       'label': ClassLabel(names=['human', 'bot'])
+       'user_id': value('string'),
+       'text': value('string'),
+       'features': value('string'),  # JSON string of raw node data
+       'label': classLabel(names=['human', 'bot'])
    })
    ```
 4. `Dataset.from_dict()` converts these dictionaries to Hugging Face Datasets
@@ -1718,7 +1718,7 @@ If you use this project or the datasets, please cite the original dataset papers
 
 ```
 @inproceedings{fengtwibot,
-  title={TwiBot-22 : Towards Graph-Based Twitter Bot Detection},
+  title={TwiBot-22 : towards Graph-Based Twitter Bot Detection},
   author={Feng, Shangbin and Tan, Zhaoxuan and Wan, Herun and Wang, Ningnan and Chen, Zilong and Zhang, Binchi and Zheng, Qinghua and Zhang, Wenqian and Lei, Zhenyu and Yang, Shujie and others},
   booktitle={Thirty-sixth Conference on Neural Information Processing Systems Datasets and Benchmarks Track}
 }
