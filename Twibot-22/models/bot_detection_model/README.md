@@ -1,4 +1,4 @@
-# Bot Detection Model
+# Bot detection model
 
 This directory contains the DistilBERT model trained on the Twibot-22 dataset.
 
