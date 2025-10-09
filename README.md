@@ -1,4 +1,4 @@
-# Twitter bot detection using profile text and DistilBERT
+# Twitter bot detection using profile text and  Fine-Tuning DistilBERT
 
 ## Table of contents
 1. [Project specifications](#1-project-specifications)  
