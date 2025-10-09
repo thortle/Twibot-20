@@ -118,6 +118,7 @@
 10. [Dataset attribution and citation](#9-dataset-attribution-and-citation)
 
 ---
+Note: The project serves mainly an educational purpose.
 
 ## 1. Project specification
 
